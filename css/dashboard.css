@@ -425,3 +425,392 @@
   font-weight: 600;
 }
 
+/* Auditoría */
+.modal-large {
+  max-width: 800px;
+  width: 90%;
+}
+
+.modal-small {
+  max-width: 450px;
+  width: 90%;
+}
+
+.auditoria-balance-info {
+  background: linear-gradient(135deg, #2196F3 0%, #1976d2 100%);
+  color: white;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.balance-label {
+  font-weight: 500;
+}
+
+.balance-valor {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.cuentas-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.section-header-small {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.section-header-small h4 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.cuentas-list {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  min-height: 100px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.empty-cuentas {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+.cuenta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cuenta-item:last-child {
+  border-bottom: none;
+}
+
+.cuenta-descripcion {
+  flex: 1;
+  font-weight: 500;
+}
+
+.cuenta-monto {
+  font-weight: 600;
+  color: var(--success-color);
+  margin-right: var(--spacing-md);
+}
+
+.btn-icon-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-icon-delete:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.total-cuentas {
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.diferencia-section {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.diferencia-section.success {
+  background-color: #d4edda;
+  border-color: #28a745;
+}
+
+.diferencia-section.warning {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+.diferencia-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  font-size: 1.1rem;
+}
+
+.diferencia-label {
+  font-weight: 600;
+}
+
+.diferencia-valor {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.diferencia-valor.positiva {
+  color: #28a745;
+}
+
+.diferencia-valor.negativa {
+  color: #dc3545;
+}
+
+.diferencia-estado {
+  padding: var(--spacing-sm);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.estado-cuadra {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.estado-no-cuadra {
+  color: #856404;
+  font-weight: 600;
+}
+
+.auditorias-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.auditoria-item {
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.auditoria-item.success {
+  border-color: #28a745;
+}
+
+.auditoria-item.error {
+  border-color: #ffc107;
+}
+
+.auditoria-header {
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  transition: background-color 0.2s;
+}
+
+.auditoria-header:hover {
+  background-color: #e0e0e0;
+}
+
+.auditoria-fecha {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 140px;
+}
+
+.auditoria-resumen {
+  flex: 1;
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.auditoria-total,
+.auditoria-balance {
+  font-weight: 500;
+}
+
+.auditoria-diferencia {
+  font-weight: 600;
+}
+
+.auditoria-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: transform 0.3s;
+}
+
+.auditoria-detalle {
+  padding: var(--spacing-lg);
+  background-color: var(--bg-primary);
+  display: none;
+}
+
+.auditoria-cuentas h4,
+.auditoria-notas h4 {
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.auditoria-notas {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.auditoria-actions {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.summary-card.success {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.summary-card.config-card {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.summary-card.config-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.summary-card-icon {
+  font-size: 2rem;
+}
+
+.summary-card-sublabel {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* Modal de Configuración de Cuentas */
+.modal-medium {
+  max-width: 600px;
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.95rem;
+}
+
+.cuentas-config-list-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.cuenta-config-item-modal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: all 0.2s;
+}
+
+.cuenta-config-item-modal:hover {
+  background-color: var(--hover-bg);
+  transform: translateX(4px);
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-lg);
+  font-style: italic;
+}
+
+/* Configuración de Cuentas (removido de página principal) */
+.cuentas-config-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+}
+
+.cuenta-config-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s;
+}
+
+.cuenta-config-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.cuenta-config-nombre {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Montos List en Modal */
+.montos-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.monto-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.monto-label {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 150px;
+}
+
+.monto-input {
+  flex: 1;
+  max-width: 200px;
+}
+

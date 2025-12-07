@@ -118,7 +118,7 @@ const DashboardView = {
           
           <div class="summary-card ahorros">
             <div class="summary-card-icon">💰</div>
-            <div class="summary-card-label">Ahorros Acumulados</div>
+            <div class="summary-card-label">Ahorros</div>
             <div class="summary-card-value">${Calculations.formatearMoneda(ahorrosStats.totalAcumulado)}</div>
             <div class="summary-card-change">
               ${ahorrosStats.cantidadMovimientos} movimientos

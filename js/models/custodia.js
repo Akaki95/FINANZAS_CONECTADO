@@ -2,11 +2,20 @@
 const CustodiaModel = {
   collectionName: 'custodias',
   
+  // Normalizar custodia (convertir _id de MongoDB a id)
+  normalizar(custodia) {
+    if (custodia._id && !custodia.id) {
+      custodia.id = custodia._id;
+    }
+    return custodia;
+  },
+  
   // Obtener todas las custodias
   getAll() {
     const custodias = CacheService.get(this.collectionName) || [];
     Logger.log(`${custodias.length} custodias cargadas`);
-    return custodias;
+    // Normalizar todas las custodias
+    return custodias.map(c => this.normalizar(c));
   },
   
   // Obtener custodia por ID

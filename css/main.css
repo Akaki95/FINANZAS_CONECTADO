@@ -57,6 +57,7 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: var(--spacing-md);
+  max-width: 70%;
 }
 
 .logo {
@@ -108,6 +109,37 @@ body {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
   transform: rotate(90deg);
+}
+
+/* Botón de sincronización */
+.sync-btn {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.sync-btn:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  transform: rotate(180deg);
+}
+
+.sync-btn:active {
+  animation: spin 0.6s ease-in-out;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Sync status */
@@ -435,7 +467,7 @@ body {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .confirm-modal.show {

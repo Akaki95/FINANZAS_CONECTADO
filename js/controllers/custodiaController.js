@@ -1,6 +1,8 @@
 // Controlador de Custodia - Gestión de dinero de terceros
 const CustodiaController = {
   personaSeleccionada: null,
+  tabActivo: 'resumen', // Recordar tab activo
+  eventListenerAdjunto: false, // Control para evitar múltiples listeners
   
   render() {
     const mainContent = document.getElementById('main-content');
@@ -153,6 +155,46 @@ const CustodiaController = {
     if (personaInput) {
       personaInput.addEventListener('input', () => this.actualizarSaldoDisponible());
     }
+    
+    // Adjuntar event listener global una sola vez
+    if (!this.eventListenerAdjunto) {
+      this.setupEventListeners();
+      this.eventListenerAdjunto = true;
+    }
+    
+    // Restaurar tab activo
+    if (this.tabActivo === 'movimientos') {
+      this.cambiarTab('movimientos');
+    }
+  },
+  
+  setupEventListeners() {
+    // Delegación de eventos a nivel de documento
+    document.addEventListener('click', (e) => {
+      // Solo procesar si estamos en la sección de custodia
+      const mainContent = document.getElementById('main-content');
+      if (!mainContent.querySelector('.section-title')?.textContent.includes('Custodia')) {
+        return;
+      }
+      
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      
+      const action = target.getAttribute('data-action');
+      const id = target.getAttribute('data-id');
+      
+      if (action === 'editar') {
+        e.preventDefault();
+        e.stopPropagation();
+        Logger.log('Editando custodia:', id);
+        this.editar(id);
+      } else if (action === 'eliminar') {
+        e.preventDefault();
+        e.stopPropagation();
+        Logger.log('Eliminando custodia:', id);
+        this.eliminar(id);
+      }
+    });
   },
   
   renderTodosMovimientos() {
@@ -196,8 +238,8 @@ const CustodiaController = {
                     <strong>${c.tipo === 'deposito' ? '+' : '-'}${Calculations.formatearMoneda(c.monto)}</strong>
                   </td>
                   <td class="text-center">
-                    <button class="item-action-btn" onclick="CustodiaController.editar('${c.id}')">✏️</button>
-                    <button class="item-action-btn delete" onclick="CustodiaController.eliminar('${c.id}')">🗑️</button>
+                    <button class="item-action-btn" data-action="editar" data-id="${c.id}">✏️</button>
+                    <button class="item-action-btn delete" data-action="eliminar" data-id="${c.id}">🗑️</button>
                   </td>
                 </tr>
               `).join('')}
@@ -209,10 +251,21 @@ const CustodiaController = {
   },
   
   cambiarTab(tab) {
+    // Guardar el tab activo
+    this.tabActivo = tab;
+    
+    // Remover active de todos los tabs
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
     
-    event.target.classList.add('active');
+    // Activar el tab correspondiente usando el parámetro tab
+    const tabs = document.querySelectorAll('.tab');
+    if (tab === 'resumen') {
+      tabs[0].classList.add('active');
+    } else if (tab === 'movimientos') {
+      tabs[1].classList.add('active');
+    }
+    
     document.getElementById(`tab-${tab}`).classList.add('active');
   },
   

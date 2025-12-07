@@ -471,6 +471,66 @@
   color: var(--text-secondary);
 }
 
+/* Auditoría en dark mode */
+[data-theme="dark"] .auditoria-balance-info {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+[data-theme="dark"] .cuentas-list {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .cuenta-item {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .total-cuentas {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .diferencia-section {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-color: rgba(255, 193, 7, 0.3);
+}
+
+[data-theme="dark"] .diferencia-section.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+[data-theme="dark"] .auditoria-item {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .auditoria-item.success {
+  border-color: #15803d;
+}
+
+[data-theme="dark"] .auditoria-item.error {
+  border-color: #ea580c;
+}
+
+[data-theme="dark"] .auditoria-header {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .auditoria-header:hover {
+  background-color: rgba(45, 45, 45, 0.8);
+}
+
+[data-theme="dark"] .auditoria-detalle {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .auditoria-notas {
+  border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .auditoria-actions {
+  border-top-color: var(--border-color);
+}
+
 [data-theme="dark"] .deuda-stat-value {
   color: var(--text-primary);
 }

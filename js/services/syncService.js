@@ -27,14 +27,29 @@ const SyncService = {
   // Verificar conexión con backend
   async checkBackendConnection() {
     try {
-      const response = await fetch(this.apiBaseUrl.replace('/api', ''));
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos timeout
+      
+      const response = await fetch(this.apiBaseUrl.replace('/api', ''), {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         this.isOnline = true;
         Logger.success('Backend conectado correctamente');
+      } else {
+        this.isOnline = false;
+        Logger.warn('Backend no responde correctamente');
       }
     } catch (error) {
       this.isOnline = false;
-      Logger.warn('Backend no disponible - usando modo offline');
+      if (error.name === 'AbortError') {
+        Logger.warn('Backend no disponible (timeout) - usando modo offline');
+      } else {
+        Logger.warn('Backend no disponible - usando modo offline');
+      }
     }
     this.updateStatus();
   },
@@ -245,21 +260,41 @@ const SyncService = {
         url = `${this.apiBaseUrl}/patrimonio/${collection}`;
       }
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+      
       const response = await fetch(url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Error cargando ${collection}`);
+        throw new Error(`Error cargando ${collection}: ${response.status}`);
       }
 
       const result = await response.json();
-      const documents = result.data || [];
+      
+      // Manejar ambos formatos: { data: [...] } o directamente [...]
+      let documents;
+      if (Array.isArray(result)) {
+        documents = result;
+      } else if (result.data && Array.isArray(result.data)) {
+        documents = result.data;
+      } else {
+        documents = [];
+      }
+      
       Logger.success(`${documents.length} documentos cargados de ${collection} desde el backend`);
       return documents;
     } catch (error) {
-      Logger.error(`Error cargando ${collection} desde el backend`, error);
+      if (error.name === 'AbortError') {
+        Logger.error(`Timeout cargando ${collection} desde el backend`);
+      } else {
+        Logger.error(`Error cargando ${collection} desde el backend: ${error.message}`);
+      }
       return null;
     }
   },
@@ -314,6 +349,30 @@ const SyncService = {
       this.processSyncQueue();
     } else {
       Logger.warn('No se puede sincronizar sin conexión');
+    }
+  },
+  
+  // Sincronizar colección completa al servidor (para configuraciones)
+  async syncToServer(collection, data) {
+    if (!this.isOnline) {
+      Logger.warn('Backend no disponible, datos guardados solo localmente');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${collection}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error sincronizando ${collection}`);
+      }
+
+      Logger.success(`${collection} sincronizado correctamente`);
+    } catch (error) {
+      Logger.error(`Error sincronizando ${collection}`, error);
     }
   }
 };

@@ -10,8 +10,15 @@
     ConfigController.initTheme();
     
     // Inicializar servicios
-    ConfigModel.init();
     SyncService.init();
+    
+    // Inicializar configuración (carga desde MongoDB solo si no existe localmente)
+    ConfigModel.init().catch(error => {
+      Logger.error('Error inicializando configuración', error);
+    });
+    
+    // Inicializar modelos
+    AuditoriaModel.init();
     
     // Registrar rutas
     Router.register('dashboard', () => {
@@ -46,6 +53,10 @@
       CustodiaController.render();
     });
     
+    Router.register('auditoria', () => {
+      AuditoriaController.render();
+    });
+    
     Router.register('configuracion', () => {
       ConfigController.render();
     });
@@ -58,6 +69,9 @@
     
     // Configurar cierre de modales de formularios
     setupFormModals();
+    
+    // Configurar botón de sincronización manual
+    setupSyncButton();
     
     // Si quieres cargar datos de ejemplo, descomenta la siguiente línea:
     // cargarDatosDeEjemplo();
@@ -91,7 +105,7 @@
   }
 
   // Modal de confirmación personalizado
-  window.showConfirmModal = function(message, onConfirm, onCancel) {
+  window.showConfirmModal = function(message, onConfirm, onCancel, confirmText = 'Confirmar') {
     const modal = document.getElementById('confirm-modal');
     const messageEl = document.getElementById('confirm-modal-message');
     const confirmBtn = document.getElementById('confirm-modal-confirm');
@@ -99,6 +113,16 @@
 
     // Establecer mensaje
     messageEl.textContent = message;
+    
+    // Personalizar texto del botón de confirmación
+    confirmBtn.textContent = confirmText;
+    
+    // Si no hay callback de cancelar, ocultar botón de cancelar
+    if (!onCancel && confirmText === 'Entendido') {
+      cancelBtn.style.display = 'none';
+    } else {
+      cancelBtn.style.display = '';
+    }
 
     // Mostrar modal
     modal.classList.add('show');
@@ -115,6 +139,9 @@
       cancelBtn.onclick = null;
       modal.onclick = null;
       document.removeEventListener('keydown', escHandler);
+      // Restaurar texto del botón
+      confirmBtn.textContent = 'Confirmar';
+      cancelBtn.style.display = '';
     };
 
     // Handler para ESC
@@ -152,6 +179,88 @@
 
     // ESC para cerrar
     document.addEventListener('keydown', escHandler);
+  }
+  
+  // Cargar datos iniciales desde el servidor
+  async function cargarDatosIniciales() {
+    Logger.log('Cargando datos desde MongoDB Atlas...');
+    
+    const colecciones = [
+      'gastos',
+      'ingresos',
+      'deudas',
+      'prestamos',
+      'activos',
+      'pasivos',
+      'custodias',
+      'auditorias',
+      'configuracion_cuentas'
+    ];
+    
+    let cargadas = 0;
+    
+    // Cargar configuración de formularios (estructura diferente)
+    try {
+      await ConfigModel.loadFromAtlas();
+      Logger.success('Configuración de formularios cargada desde MongoDB');
+      cargadas++;
+    } catch (error) {
+      Logger.warn('Error cargando configuración de formularios');
+    }
+    
+    for (const coleccion of colecciones) {
+      try {
+        const datos = await SyncService.loadFromCloud(coleccion);
+        if (datos && datos.length > 0) {
+          CacheService.set(coleccion, datos);
+          cargadas++;
+          Logger.success(`${coleccion}: ${datos.length} registros cargados`);
+        } else {
+          Logger.log(`${coleccion}: sin datos en servidor`);
+        }
+      } catch (error) {
+        Logger.warn(`Error cargando ${coleccion}: ${error.message}`);
+      }
+    }
+    
+    if (cargadas > 0) {
+      Logger.success(`✓ ${cargadas} colecciones cargadas desde MongoDB Atlas`);
+    } else {
+      Logger.log('No se encontraron datos en el servidor o no hay conexión');
+    }
+  }
+  
+  // Configurar botón de sincronización manual
+  function setupSyncButton() {
+    const syncBtn = document.getElementById('sync-btn');
+    const syncStatus = document.getElementById('sync-status');
+    const syncText = syncStatus.querySelector('.sync-text');
+    
+    if (!syncBtn) return;
+    
+    syncBtn.addEventListener('click', async () => {
+      // Deshabilitar botón durante sincronización
+      syncBtn.disabled = true;
+      syncBtn.style.animation = 'spin 1s linear infinite';
+      syncText.textContent = 'Sincronizando...';
+      
+      try {
+        await cargarDatosIniciales();
+        
+        // Recargar la vista actual
+        const currentRoute = Router.currentRoute || 'dashboard';
+        Router.navigate(currentRoute);
+        
+        syncText.textContent = 'Sincronizado';
+        Logger.success('Sincronización manual completada');
+      } catch (error) {
+        syncText.textContent = 'Error';
+        Logger.error('Error en sincronización manual', error);
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.style.animation = '';
+      }
+    });
   }
 
   // Configurar modales de formularios (gastos, ingresos, deudas, etc)

@@ -118,10 +118,23 @@ const ConfigModel = {
   },
 
   // Inicializar configuración
-  init() {
-    const config = this.getLocalConfig();
+  async init() {
+    let config = this.getLocalConfig();
     if (!config) {
-      this.saveLocalConfig(this.DEFAULT_CONFIG);
+      // Intentar cargar desde MongoDB
+      Logger.log('No hay configuración local, cargando desde MongoDB...');
+      try {
+        await this.loadFromAtlas();
+        config = this.getLocalConfig();
+      } catch (error) {
+        Logger.warn('No se pudo cargar desde MongoDB, usando configuración por defecto');
+      }
+      
+      // Si aún no hay config, usar la por defecto
+      if (!config) {
+        this.saveLocalConfig(this.DEFAULT_CONFIG);
+        Logger.log('Usando configuración por defecto');
+      }
     }
     Logger.log('ConfigModel inicializado');
   },
