@@ -1,0 +1,61 @@
+const express = require('express');
+const cors = require('cors');
+const { connectDB } = require('./config/database');
+
+// Crear aplicación Express
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middlewares
+app.use(cors()); // Permitir peticiones desde el frontend
+app.use(express.json()); // Parsear JSON en el body
+
+// Importar rutas
+const gastosRoutes = require('./routes/gastos');
+const ingresosRoutes = require('./routes/ingresos');
+const deudasRoutes = require('./routes/deudas');
+const prestamosRoutes = require('./routes/prestamos');
+const patrimonioRoutes = require('./routes/patrimonio');
+
+// Usar rutas
+app.use('/api/gastos', gastosRoutes);
+app.use('/api/ingresos', ingresosRoutes);
+app.use('/api/deudas', deudasRoutes);
+app.use('/api/prestamos', prestamosRoutes);
+app.use('/api/patrimonio', patrimonioRoutes);
+
+// Ruta de prueba
+app.get('/', (req, res) => {
+  res.json({ 
+    message: '💰 API de Finanzas Personales',
+    version: '1.0.0',
+    status: 'OK'
+  });
+});
+
+// Iniciar servidor
+async function startServer() {
+  try {
+    // Conectar a MongoDB
+    await connectDB();
+    
+    // Iniciar servidor
+    app.listen(PORT, () => {
+      console.log(`\n🚀 Servidor backend corriendo en http://localhost:${PORT}`);
+      console.log(`📊 API disponible en http://localhost:${PORT}/api`);
+      console.log(`\nPresiona Ctrl+C para detener el servidor\n`);
+    });
+  } catch (error) {
+    console.error('✗ Error iniciando el servidor:', error);
+    process.exit(1);
+  }
+}
+
+// Manejar cierre del servidor
+process.on('SIGINT', async () => {
+  console.log('\n\nCerrando servidor...');
+  process.exit(0);
+});
+
+// Iniciar
+startServer();

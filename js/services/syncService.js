@@ -1,5 +1,6 @@
-// Sync Service - Gestión de sincronización offline/online
+// Sync Service - Gestión de sincronización con backend Node.js
 const SyncService = {
+  apiBaseUrl: 'http://localhost:3000/api',
   isOnline: navigator.onLine,
   syncQueue: [],
   syncInterval: null,
@@ -8,7 +9,7 @@ const SyncService = {
   // Inicializar el servicio de sincronización
   init() {
     this.statusElement = document.getElementById('sync-status');
-    this.updateStatus();
+    this.checkBackendConnection();
     
     // Escuchar eventos de conexión
     window.addEventListener('online', () => this.handleOnline());
@@ -20,16 +21,28 @@ const SyncService = {
     // Iniciar sincronización automática cada 30 segundos
     this.startAutoSync();
     
-    Logger.log('SyncService inicializado');
+    Logger.log('SyncService inicializado con backend Node.js');
+  },
+  
+  // Verificar conexión con backend
+  async checkBackendConnection() {
+    try {
+      const response = await fetch(this.apiBaseUrl.replace('/api', ''));
+      if (response.ok) {
+        this.isOnline = true;
+        Logger.success('Backend conectado correctamente');
+      }
+    } catch (error) {
+      this.isOnline = false;
+      Logger.warn('Backend no disponible - usando modo offline');
+    }
+    this.updateStatus();
   },
   
   // Manejar estado online
   handleOnline() {
-    this.isOnline = true;
-    this.updateStatus();
+    this.checkBackendConnection();
     Logger.success('Conexión restaurada');
-    
-    // Intentar sincronizar cola pendiente
     this.processSyncQueue();
   },
   
@@ -112,15 +125,143 @@ const SyncService = {
   
   // Ejecutar operación de sincronización
   async executeOperation(operation) {
-    // Simular latencia de red
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const { collection, action, data, id } = operation;
     
-    // En una implementación real, aquí se haría la llamada a MongoDB Atlas
-    // Por ahora, solo registramos la operación
-    Logger.log('Operación ejecutada (simulada)', operation);
+    try {
+      switch (action) {
+        case 'create':
+          return await this.insertOne(collection, data);
+        case 'update':
+          return await this.updateOne(collection, id, data);
+        case 'delete':
+          return await this.deleteOne(collection, id);
+        default:
+          Logger.error('Acción desconocida', action);
+          return false;
+      }
+    } catch (error) {
+      Logger.error('Error ejecutando operación', error);
+      throw error;
+    }
+  },
+  
+  // Insertar un documento
+  async insertOne(collection, document) {
+    let url = `${this.apiBaseUrl}/${collection}`;
+    if (collection === 'activos' || collection === 'pasivos') {
+      url = `${this.apiBaseUrl}/patrimonio/${collection}`;
+    }
     
-    // TODO: Implementar llamadas reales a MongoDB Atlas API
-    return true;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(document)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Error insertando documento: ${error.error || response.statusText}`);
+    }
+
+    const result = await response.json();
+    Logger.success(`Documento insertado en ${collection}`);
+    return result;
+  },
+  
+  // Buscar documentos
+  async find(collection) {
+    const url = `${this.apiBaseUrl}/${collection}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Error buscando documentos: ${error.error || response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  },
+  
+  // Actualizar un documento
+  async updateOne(collection, id, updateData) {
+    let url = `${this.apiBaseUrl}/${collection}/${id}`;
+    if (collection === 'activos' || collection === 'pasivos') {
+      url = `${this.apiBaseUrl}/patrimonio/${collection}/${id}`;
+    }
+    
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Error actualizando documento: ${error.error || response.statusText}`);
+    }
+
+    const result = await response.json();
+    Logger.success(`Documento actualizado en ${collection}`);
+    return result;
+  },
+  
+  // Eliminar un documento
+  async deleteOne(collection, id) {
+    let url = `${this.apiBaseUrl}/${collection}/${id}`;
+    if (collection === 'activos' || collection === 'pasivos') {
+      url = `${this.apiBaseUrl}/patrimonio/${collection}/${id}`;
+    }
+    
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Error eliminando documento: ${error.error || response.statusText}`);
+    }
+
+    const result = await response.json();
+    Logger.success(`Documento eliminado de ${collection}`);
+    return result;
+  },
+  
+  // Cargar datos desde el backend
+  async loadFromCloud(collection) {
+    if (!this.isOnline) {
+      Logger.warn('Backend no disponible, usando solo localStorage');
+      return null;
+    }
+
+    try {
+      // Manejar rutas especiales para patrimonio
+      let url = `${this.apiBaseUrl}/${collection}`;
+      if (collection === 'activos' || collection === 'pasivos') {
+        url = `${this.apiBaseUrl}/patrimonio/${collection}`;
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error cargando ${collection}`);
+      }
+
+      const result = await response.json();
+      const documents = result.data || [];
+      Logger.success(`${documents.length} documentos cargados de ${collection} desde el backend`);
+      return documents;
+    } catch (error) {
+      Logger.error(`Error cargando ${collection} desde el backend`, error);
+      return null;
+    }
   },
   
   // Guardar cola en localStorage
