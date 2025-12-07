@@ -38,6 +38,10 @@
       PatrimonioController.render();
     });
     
+    Router.register('ahorros', () => {
+      AhorrosController.render();
+    });
+    
     Router.register('configuracion', () => {
       ConfigController.render();
     });

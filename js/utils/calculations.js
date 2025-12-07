@@ -129,6 +129,16 @@ const Calculations = {
     }).format(monto);
   },
   
+  // Formatear fecha
+  formatearFecha(fecha) {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  },
+  
   // Obtener mes y año actual
   obtenerMesActual() {
     const hoy = new Date();

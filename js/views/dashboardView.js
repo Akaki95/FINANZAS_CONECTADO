@@ -58,6 +58,7 @@ const DashboardView = {
     const mesActual = Calculations.obtenerMesActual();
     const balance = Calculations.calcularBalanceMensual(ingresos, gastos, mesActual.mes, mesActual.anio);
     const patrimonio = PatrimonioModel.getResumen();
+    const ahorrosStats = AhorroModel.getEstadisticas();
     
     // Inicializar filtros por defecto
     const fechasDefecto = this.inicializarFechasDefecto();
@@ -112,6 +113,15 @@ const DashboardView = {
             <div class="summary-card-value">${Calculations.formatearMoneda(patrimonio.patrimonioNeto)}</div>
             <div class="summary-card-change">
               Activos: ${Calculations.formatearMoneda(patrimonio.activos)}
+            </div>
+          </div>
+          
+          <div class="summary-card ahorros">
+            <div class="summary-card-icon">💰</div>
+            <div class="summary-card-label">Ahorros Acumulados</div>
+            <div class="summary-card-value">${Calculations.formatearMoneda(ahorrosStats.totalAcumulado)}</div>
+            <div class="summary-card-change">
+              ${ahorrosStats.cantidadMovimientos} movimientos
             </div>
           </div>
         </div>

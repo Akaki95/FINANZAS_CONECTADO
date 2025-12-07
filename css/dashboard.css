@@ -18,7 +18,7 @@
 /* Resumen de tarjetas */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
 }
@@ -47,6 +47,10 @@
 
 .summary-card.patrimonio {
   background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+}
+
+.summary-card.ahorros {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
 }
 
 .summary-card-icon {
@@ -362,3 +366,40 @@
     font-size: 1.5rem;
   }
 }
+
+/* Info Banner */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  background-color: #e3f2fd;
+  border: 1px solid #2196F3;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.info-banner-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.info-banner-text {
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.info-banner-text strong {
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+.info-banner-text ul {
+  margin: var(--spacing-sm) 0 0 var(--spacing-lg);
+  padding: 0;
+}
+
+.info-banner-text li {
+  margin-bottom: var(--spacing-sm);
+}
+

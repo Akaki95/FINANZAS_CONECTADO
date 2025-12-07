@@ -115,6 +115,10 @@
   background: linear-gradient(135deg, #7c3aed 0%, #6b21a8 100%);
 }
 
+[data-theme="dark"] .summary-card.ahorros {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+}
+
 /* Badges y chips */
 [data-theme="dark"] .badge,
 [data-theme="dark"] .category-chip {
@@ -441,6 +445,20 @@
 
 [data-theme="dark"] .deuda-stat-label {
   color: var(--text-secondary);
+}
+
+/* Info Banner en dark mode */
+[data-theme="dark"] .info-banner {
+  background-color: rgba(33, 150, 243, 0.1);
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+[data-theme="dark"] .info-banner-text {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .info-banner-text strong {
+  color: #64b5f6;
 }
 
 [data-theme="dark"] .deuda-stat-value {
