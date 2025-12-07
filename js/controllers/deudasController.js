@@ -141,9 +141,13 @@ const DeudasController = {
   },
   
   eliminar(id) {
-    if (!confirm('¿Eliminar esta deuda?')) return;
-    DeudaModel.delete(id);
-    this.render();
+    showConfirmModal(
+      '¿Estás seguro de eliminar esta deuda? Esta acción no se puede deshacer.',
+      () => {
+        DeudaModel.delete(id);
+        this.render();
+      }
+    );
   },
   
   registrarPago(id) {

@@ -140,9 +140,13 @@ const PrestamosController = {
   },
   
   eliminar(id) {
-    if (!confirm('¿Eliminar este préstamo?')) return;
-    PrestamoModel.delete(id);
-    this.render();
+    showConfirmModal(
+      '¿Estás seguro de eliminar este préstamo? Esta acción no se puede deshacer.',
+      () => {
+        PrestamoModel.delete(id);
+        this.render();
+      }
+    );
   },
   
   registrarPago(id) {

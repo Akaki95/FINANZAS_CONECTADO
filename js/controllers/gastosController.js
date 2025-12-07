@@ -184,16 +184,17 @@ const GastosController = {
   
   // Eliminar gasto
   eliminar(id) {
-    if (!confirm('¿Estás seguro de eliminar este gasto?')) return;
-    
-    try {
-      GastoModel.delete(id);
-      this.render();
-      this.mostrarMensaje('Gasto eliminado exitosamente', 'success');
-    } catch (error) {
-      Logger.error('Error eliminando gasto', error);
-      this.mostrarMensaje('Error al eliminar el gasto', 'danger');
-    }
+    showConfirmModal(
+      '¿Estás seguro de eliminar este gasto? Esta acción no se puede deshacer.',
+      () => {
+        try {
+          GastoModel.delete(id);
+          this.render();
+        } catch (error) {
+          Logger.error('Error eliminando gasto', error);
+        }
+      }
+    );
   },
   
   // Mostrar mensaje

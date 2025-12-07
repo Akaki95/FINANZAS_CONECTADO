@@ -70,6 +70,70 @@
       }
     });
   }
+
+  // Modal de confirmación personalizado
+  window.showConfirmModal = function(message, onConfirm, onCancel) {
+    const modal = document.getElementById('confirm-modal');
+    const messageEl = document.getElementById('confirm-modal-message');
+    const confirmBtn = document.getElementById('confirm-modal-confirm');
+    const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+    // Establecer mensaje
+    messageEl.textContent = message;
+
+    // Mostrar modal
+    modal.classList.add('show');
+
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
+
+    // Función para cerrar modal
+    const closeModal = () => {
+      modal.classList.remove('show');
+      document.body.style.overflow = '';
+      // Limpiar event listeners
+      confirmBtn.onclick = null;
+      cancelBtn.onclick = null;
+      modal.onclick = null;
+      document.removeEventListener('keydown', escHandler);
+    };
+
+    // Handler para ESC
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        if (onCancel) onCancel();
+      }
+    };
+
+    // Evento confirmar
+    confirmBtn.onclick = () => {
+      closeModal();
+      if (onConfirm) onConfirm();
+    };
+
+    // Evento cancelar
+    cancelBtn.onclick = () => {
+      closeModal();
+      if (onCancel) onCancel();
+    };
+
+    // Cerrar al hacer clic fuera
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        closeModal();
+        if (onCancel) onCancel();
+      }
+    };
+
+    // Prevenir que el clic en el contenido cierre el modal
+    modal.querySelector('.confirm-modal-content').onclick = (e) => {
+      e.stopPropagation();
+    };
+
+    // ESC para cerrar
+    document.addEventListener('keydown', escHandler);
+  }
   
   // Cargar datos de ejemplo si la aplicación está vacía
   function cargarDatosDeEjemplo() {

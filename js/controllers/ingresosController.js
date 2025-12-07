@@ -129,14 +129,17 @@ const IngresosController = {
   },
   
   eliminar(id) {
-    if (!confirm('¿Eliminar este ingreso?')) return;
-    try {
-      IngresoModel.delete(id);
-      this.render();
-      this.mostrarMensaje('Ingreso eliminado', 'success');
-    } catch (error) {
-      this.mostrarMensaje('Error al eliminar', 'danger');
-    }
+    showConfirmModal(
+      '¿Estás seguro de eliminar este ingreso? Esta acción no se puede deshacer.',
+      () => {
+        try {
+          IngresoModel.delete(id);
+          this.render();
+        } catch (error) {
+          Logger.error('Error eliminando ingreso', error);
+        }
+      }
+    );
   },
   
   mostrarMensaje(texto, tipo = 'info') {

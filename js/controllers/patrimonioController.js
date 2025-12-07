@@ -166,9 +166,13 @@ const PatrimonioController = {
     document.getElementById('activo-descripcion').value = activo.descripcion || '';
   },
   eliminarActivo(id) {
-    if (!confirm('¿Eliminar activo?')) return;
-    PatrimonioModel.deleteActivo(id);
-    this.render();
+    showConfirmModal(
+      '¿Estás seguro de eliminar este activo? Esta acción no se puede deshacer.',
+      () => {
+        PatrimonioModel.deleteActivo(id);
+        this.render();
+      }
+    );
   },
   
   nuevoPasivo() { document.getElementById('form-pasivo').classList.remove('hidden'); },
@@ -199,9 +203,13 @@ const PatrimonioController = {
     document.getElementById('pasivo-descripcion').value = pasivo.descripcion || '';
   },
   eliminarPasivo(id) {
-    if (!confirm('¿Eliminar pasivo?')) return;
-    PatrimonioModel.deletePasivo(id);
-    this.render();
+    showConfirmModal(
+      '¿Estás seguro de eliminar este pasivo? Esta acción no se puede deshacer.',
+      () => {
+        PatrimonioModel.deletePasivo(id);
+        this.render();
+      }
+    );
   }
 };
 
