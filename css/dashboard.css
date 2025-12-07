@@ -403,3 +403,25 @@
   margin-bottom: var(--spacing-sm);
 }
 
+/* Saldo info */
+.saldo-info {
+  background-color: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.saldo-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.saldo-valor {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+

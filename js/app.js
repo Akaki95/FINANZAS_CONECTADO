@@ -42,6 +42,10 @@
       AhorrosController.render();
     });
     
+    Router.register('custodia', () => {
+      CustodiaController.render();
+    });
+    
     Router.register('configuracion', () => {
       ConfigController.render();
     });

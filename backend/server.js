@@ -18,6 +18,7 @@ const prestamosRoutes = require('./routes/prestamos');
 const patrimonioRoutes = require('./routes/patrimonio');
 const configuracionRoutes = require('./routes/configuracion');
 const ahorrosRoutes = require('./routes/ahorros');
+const custodiaRoutes = require('./routes/custodia');
 
 // Usar rutas
 app.use('/api/gastos', gastosRoutes);
@@ -27,6 +28,7 @@ app.use('/api/prestamos', prestamosRoutes);
 app.use('/api/patrimonio', patrimonioRoutes);
 app.use('/api/configuracion', configuracionRoutes);
 app.use('/api/ahorros', ahorrosRoutes);
+app.use('/api/custodias', custodiaRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -41,7 +43,10 @@ app.get('/', (req, res) => {
 async function startServer() {
   try {
     // Conectar a MongoDB
-    await connectDB();
+    const db = await connectDB();
+    
+    // Hacer la base de datos disponible en todas las rutas
+    app.locals.db = db;
     
     // Iniciar servidor
     app.listen(PORT, () => {
