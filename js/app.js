@@ -6,6 +6,9 @@
   function init() {
     Logger.log('Iniciando aplicación de Finanzas Personales...');
     
+    // Inicializar tema
+    ConfigController.initTheme();
+    
     // Inicializar servicios
     ConfigModel.init();
     SyncService.init();

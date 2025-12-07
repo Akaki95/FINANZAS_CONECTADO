@@ -6,11 +6,22 @@ const ConfigController = {
   render() {
     const mainContent = document.getElementById('main-content');
     
+    // Obtener el tema actual
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    
     mainContent.innerHTML = `
       <div class="config-container">
         <div class="config-header">
           <h2 class="section-title">⚙️ Configuración de Formularios</h2>
-          <button class="btn btn-secondary" onclick="Router.navigate('dashboard')">← Volver</button>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <button class="theme-toggle" onclick="ConfigController.toggleTheme()" title="Cambiar tema">
+              <div class="theme-toggle-slider" id="theme-slider">
+                <span class="theme-toggle-icon sun">☀️</span>
+                <span class="theme-toggle-icon moon">🌙</span>
+              </div>
+            </button>
+            <button class="btn btn-secondary" onclick="Router.navigate('dashboard')">← Volver</button>
+          </div>
         </div>
 
         <!-- Tabs de módulos -->
@@ -495,6 +506,36 @@ const ConfigController = {
 
   capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+  },
+
+  // Toggle Dark Mode
+  toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    // Agregar animación al slider
+    const slider = document.getElementById('theme-slider');
+    if (slider) {
+      slider.classList.add('rotating');
+      setTimeout(() => {
+        slider.classList.remove('rotating');
+      }, 500);
+    }
+    
+    // Cambiar tema
+    html.setAttribute('data-theme', newTheme);
+    
+    // Guardar preferencia en localStorage
+    localStorage.setItem('theme', newTheme);
+    
+    Logger.log(`Tema cambiado a: ${newTheme}`);
+  },
+
+  // Inicializar tema desde localStorage
+  initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
   }
 };
 
