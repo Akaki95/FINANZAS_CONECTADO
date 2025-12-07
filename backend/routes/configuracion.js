@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../config/database');
+const { getDB } = require('../config/database');
 const { ObjectId } = require('mongodb');
 
 // GET /api/configuracion - Obtener todas las configuraciones
 router.get('/', async (req, res) => {
   try {
-    const db = getDb();
+    const db = getDB();
     const configuraciones = await db.collection('configuraciones').find({}).toArray();
     res.json(configuraciones);
   } catch (error) {
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 router.get('/:modulo', async (req, res) => {
   try {
     const { modulo } = req.params;
-    const db = getDb();
+    const db = getDB();
     
     const configuracion = await db.collection('configuraciones').findOne({ modulo });
     
@@ -44,7 +44,7 @@ router.put('/:modulo', async (req, res) => {
       return res.status(400).json({ error: 'Campos inválidos' });
     }
     
-    const db = getDb();
+    const db = getDB();
     
     const configuracion = {
       modulo,
@@ -77,7 +77,7 @@ router.put('/:modulo', async (req, res) => {
 router.delete('/:modulo', async (req, res) => {
   try {
     const { modulo } = req.params;
-    const db = getDb();
+    const db = getDB();
     
     const result = await db.collection('configuraciones').deleteOne({ modulo });
     
