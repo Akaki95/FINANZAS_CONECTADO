@@ -26,44 +26,8 @@ const GastosController = {
             <div class="modal-body">
               <form id="gasto-form" onsubmit="GastosController.guardar(event)">
                 <input type="hidden" id="gasto-id">
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label" for="gasto-fecha">Fecha *</label>
-                    <input type="date" id="gasto-fecha" class="form-input" required 
-                           value="${new Date().toISOString().split('T')[0]}">
-                  </div>
-                  
-                  <div class="form-group">
-                    <label class="form-label" for="gasto-monto">Monto (€) *</label>
-                    <input type="number" id="gasto-monto" class="form-input" 
-                           step="0.01" min="0.01" required placeholder="0.00">
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label class="form-label" for="gasto-categoria">Categoría *</label>
-                  <select id="gasto-categoria" class="form-select" required>
-                    <option value="">Selecciona una categoría</option>
-                    <option value="Comida">🍽️ Comida</option>
-                    <option value="Transporte">🚗 Transporte</option>
-                    <option value="Ocio">🎮 Ocio</option>
-                    <option value="Salud">💊 Salud</option>
-                    <option value="Educación">📚 Educación</option>
-                    <option value="Vivienda">🏠 Vivienda</option>
-                    <option value="Servicios">💡 Servicios</option>
-                    <option value="Otros">📦 Otros</option>
-                  </select>
-                </div>
-                
-                <div class="form-group">
-                  <label class="form-label" for="gasto-descripcion">Descripción</label>
-                  <textarea id="gasto-descripcion" class="form-textarea" 
-                            rows="3" placeholder="Opcional..."></textarea>
-                </div>
-                
+                ${FormBuilder.renderInRows('gastos', 'gasto-form')}
                 <div class="form-error" id="gasto-errors"></div>
-                
                 <div class="form-actions">
                   <button type="button" class="btn btn-secondary" 
                           onclick="GastosController.cancelar()">Cancelar</button>
@@ -124,15 +88,14 @@ const GastosController = {
     document.getElementById('modal-gasto').classList.add('show');
     document.getElementById('gasto-id').value = '';
     document.getElementById('form-gasto-title').textContent = 'Nuevo Gasto';
-    document.getElementById('gasto-form').reset();
-    document.getElementById('gasto-fecha').value = new Date().toISOString().split('T')[0];
+    FormBuilder.clearForm('gastos');
     ValidationService.limpiarErrores('gasto-errors');
   },
   
   // Cancelar formulario
   cancelar() {
     document.getElementById('modal-gasto').classList.remove('show');
-    document.getElementById('gasto-form').reset();
+    FormBuilder.clearForm('gastos');
     ValidationService.limpiarErrores('gasto-errors');
   },
   
@@ -140,13 +103,15 @@ const GastosController = {
   guardar(event) {
     event.preventDefault();
     
+    // Validar formulario dinámico
+    const validation = FormBuilder.validateForm('gastos');
+    if (!validation.valid) {
+      ValidationService.mostrarErrores(validation.errors, 'gasto-errors');
+      return;
+    }
+    
     const id = document.getElementById('gasto-id').value;
-    const gastoData = {
-      fecha: document.getElementById('gasto-fecha').value,
-      monto: document.getElementById('gasto-monto').value,
-      categoria: document.getElementById('gasto-categoria').value,
-      descripcion: document.getElementById('gasto-descripcion').value
-    };
+    const gastoData = FormBuilder.extractFormData('gastos');
     
     try {
       if (id) {
@@ -175,10 +140,7 @@ const GastosController = {
     document.getElementById('modal-gasto').classList.add('show');
     document.getElementById('form-gasto-title').textContent = 'Editar Gasto';
     document.getElementById('gasto-id').value = gasto.id;
-    document.getElementById('gasto-fecha').value = gasto.fecha;
-    document.getElementById('gasto-monto').value = gasto.monto;
-    document.getElementById('gasto-categoria').value = gasto.categoria;
-    document.getElementById('gasto-descripcion').value = gasto.descripcion || '';
+    FormBuilder.fillForm('gastos', gasto);
     ValidationService.limpiarErrores('gasto-errors');
   },
   

@@ -7,6 +7,7 @@
     Logger.log('Iniciando aplicación de Finanzas Personales...');
     
     // Inicializar servicios
+    ConfigModel.init();
     SyncService.init();
     
     // Registrar rutas
@@ -32,6 +33,10 @@
     
     Router.register('patrimonio', () => {
       PatrimonioController.render();
+    });
+    
+    Router.register('configuracion', () => {
+      ConfigController.render();
     });
     
     // Inicializar router

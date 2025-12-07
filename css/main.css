@@ -86,6 +86,28 @@ body {
   color: white;
 }
 
+/* Botón de configuración */
+.config-btn {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.config-btn:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: rotate(90deg);
+}
+
 /* Sync status */
 .sync-status {
   display: flex;

@@ -16,6 +16,7 @@ const ingresosRoutes = require('./routes/ingresos');
 const deudasRoutes = require('./routes/deudas');
 const prestamosRoutes = require('./routes/prestamos');
 const patrimonioRoutes = require('./routes/patrimonio');
+const configuracionRoutes = require('./routes/configuracion');
 
 // Usar rutas
 app.use('/api/gastos', gastosRoutes);
@@ -23,6 +24,7 @@ app.use('/api/ingresos', ingresosRoutes);
 app.use('/api/deudas', deudasRoutes);
 app.use('/api/prestamos', prestamosRoutes);
 app.use('/api/patrimonio', patrimonioRoutes);
+app.use('/api/configuracion', configuracionRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

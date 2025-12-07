@@ -15,8 +15,8 @@ const Router = {
     window.addEventListener('hashchange', () => this.handleRoute());
     window.addEventListener('load', () => this.handleRoute());
     
-    // Configurar navegación con botones
-    document.querySelectorAll('.nav-btn').forEach(btn => {
+    // Configurar navegación con botones de navegación y configuración
+    document.querySelectorAll('.nav-btn, .config-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const route = e.target.dataset.route;
         this.navigate(route);
