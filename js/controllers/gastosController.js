@@ -122,7 +122,6 @@ const GastosController = {
       
       this.cancelar();
       this.render();
-      this.mostrarMensaje('Gasto guardado exitosamente', 'success');
     } catch (error) {
       Logger.error('Error guardando gasto', error);
       ValidationService.mostrarErrores([error.message], 'gasto-errors');

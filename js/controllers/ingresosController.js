@@ -115,7 +115,6 @@ const IngresosController = {
       id ? IngresoModel.update(id, data) : IngresoModel.create(data);
       this.cancelar();
       this.render();
-      this.mostrarMensaje('Ingreso guardado exitosamente', 'success');
     } catch (error) {
       ValidationService.mostrarErrores([error.message], 'ingreso-errors');
     }
