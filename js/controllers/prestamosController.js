@@ -19,45 +19,50 @@ const PrestamosController = {
           </div>
         </div>
         
-        <div id="form-prestamo" class="form-container hidden">
-          <div class="form-card">
-            <div class="form-header"><h3 class="form-title">Nuevo Préstamo</h3></div>
-            <form id="prestamo-form" onsubmit="PrestamosController.guardar(event)">
-              <input type="hidden" id="prestamo-id">
-              <div class="form-group">
-                <label class="form-label">Persona *</label>
-                <input type="text" id="prestamo-persona" class="form-input" required>
-              </div>
-              <div class="form-row">
+        <div id="modal-prestamo" class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="form-prestamo-title">Nuevo Préstamo</h3>
+              <button class="modal-close" onclick="PrestamosController.cancelar()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="prestamo-form" onsubmit="PrestamosController.guardar(event)">
+                <input type="hidden" id="prestamo-id">
                 <div class="form-group">
-                  <label class="form-label">Monto Inicial (€) *</label>
-                  <input type="number" id="prestamo-monto-inicial" class="form-input" step="0.01" min="0.01" required>
+                  <label class="form-label">Persona *</label>
+                  <input type="text" id="prestamo-persona" class="form-input" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Monto Inicial (€) *</label>
+                    <input type="number" id="prestamo-monto-inicial" class="form-input" step="0.01" min="0.01" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Monto Pendiente (€) *</label>
+                    <input type="number" id="prestamo-monto-pendiente" class="form-input" step="0.01" min="0" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Fecha Préstamo *</label>
+                    <input type="date" id="prestamo-fecha-prestamo" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Fecha Devolución</label>
+                    <input type="date" id="prestamo-fecha-devolucion" class="form-input">
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Monto Pendiente (€) *</label>
-                  <input type="number" id="prestamo-monto-pendiente" class="form-input" step="0.01" min="0" required>
+                  <label class="form-label">Descripción</label>
+                  <textarea id="prestamo-descripcion" class="form-textarea" rows="3"></textarea>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Fecha Préstamo *</label>
-                  <input type="date" id="prestamo-fecha-prestamo" class="form-input" required>
+                <div class="form-error" id="prestamo-errors"></div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" onclick="PrestamosController.cancelar()">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Fecha Devolución</label>
-                  <input type="date" id="prestamo-fecha-devolucion" class="form-input">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Descripción</label>
-                <textarea id="prestamo-descripcion" class="form-textarea" rows="3"></textarea>
-              </div>
-              <div class="form-error" id="prestamo-errors"></div>
-              <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="PrestamosController.cancelar()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
         
@@ -96,13 +101,14 @@ const PrestamosController = {
   },
   
   mostrarFormulario() {
-    document.getElementById('form-prestamo').classList.remove('hidden');
+    document.getElementById('modal-prestamo').classList.add('show');
     document.getElementById('prestamo-form').reset();
+    document.getElementById('form-prestamo-title').textContent = 'Nuevo Préstamo';
     document.getElementById('prestamo-fecha-prestamo').value = new Date().toISOString().split('T')[0];
   },
   
   cancelar() {
-    document.getElementById('form-prestamo').classList.add('hidden');
+    document.getElementById('modal-prestamo').classList.remove('show');
   },
   
   guardar(event) {
@@ -129,7 +135,8 @@ const PrestamosController = {
   editar(id) {
     const prestamo = PrestamoModel.getById(id);
     if (!prestamo) return;
-    document.getElementById('form-prestamo').classList.remove('hidden');
+    document.getElementById('modal-prestamo').classList.add('show');
+    document.getElementById('form-prestamo-title').textContent = 'Editar Préstamo';
     document.getElementById('prestamo-id').value = prestamo.id;
     document.getElementById('prestamo-persona').value = prestamo.persona;
     document.getElementById('prestamo-monto-inicial').value = prestamo.montoInicial;

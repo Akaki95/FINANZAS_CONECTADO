@@ -38,27 +38,33 @@ const PatrimonioController = {
             <h3>Activos</h3>
             <button class="btn btn-primary" onclick="PatrimonioController.nuevoActivo()">➕ Nuevo Activo</button>
           </div>
-          <div id="form-activo" class="form-container hidden">
-            <div class="form-card">
-              <form id="activo-form" onsubmit="PatrimonioController.guardarActivo(event)">
-                <input type="hidden" id="activo-id">
-                <div class="form-group">
-                  <label class="form-label">Nombre *</label>
-                  <input type="text" id="activo-nombre" class="form-input" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Valor (€) *</label>
-                  <input type="number" id="activo-valor" class="form-input" step="0.01" min="0.01" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Descripción</label>
-                  <textarea id="activo-descripcion" class="form-textarea" rows="2"></textarea>
-                </div>
-                <div class="form-actions">
-                  <button type="button" class="btn btn-secondary" onclick="PatrimonioController.cancelarActivo()">Cancelar</button>
-                  <button type="submit" class="btn btn-primary">Guardar</button>
-                </div>
-              </form>
+          <div id="modal-activo" class="modal-overlay">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 class="modal-title" id="form-activo-title">Nuevo Activo</h3>
+                <button class="modal-close" onclick="PatrimonioController.cancelarActivo()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <form id="activo-form" onsubmit="PatrimonioController.guardarActivo(event)">
+                  <input type="hidden" id="activo-id">
+                  <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" id="activo-nombre" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Valor (€) *</label>
+                    <input type="number" id="activo-valor" class="form-input" step="0.01" min="0.01" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea id="activo-descripcion" class="form-textarea" rows="2"></textarea>
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="PatrimonioController.cancelarActivo()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
           ${activos.length === 0 ? '<div class="empty-state"><div class="empty-state-icon">🏦</div><div class="empty-state-title">No hay activos registrados</div></div>' : `
@@ -86,18 +92,35 @@ const PatrimonioController = {
             <h3>Pasivos</h3>
             <button class="btn btn-primary" onclick="PatrimonioController.nuevoPasivo()">➕ Nuevo Pasivo</button>
           </div>
-          <div id="form-pasivo" class="form-container hidden">
-            <div class="form-card">
-              <form id="pasivo-form" onsubmit="PatrimonioController.guardarPasivo(event)">
-                <input type="hidden" id="pasivo-id">
-                <div class="form-group">
-                  <label class="form-label">Nombre *</label>
-                  <input type="text" id="pasivo-nombre" class="form-input" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Valor (€) *</label>
-                  <input type="number" id="pasivo-valor" class="form-input" step="0.01" min="0.01" required>
-                </div>
+          <div id="modal-pasivo" class="modal-overlay">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 class="modal-title" id="form-pasivo-title">Nuevo Pasivo</h3>
+                <button class="modal-close" onclick="PatrimonioController.cancelarPasivo()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <form id="pasivo-form" onsubmit="PatrimonioController.guardarPasivo(event)">
+                  <input type="hidden" id="pasivo-id">
+                  <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" id="pasivo-nombre" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Valor (€) *</label>
+                    <input type="number" id="pasivo-valor" class="form-input" step="0.01" min="0.01" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea id="pasivo-descripcion" class="form-textarea" rows="2"></textarea>
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="PatrimonioController.cancelarPasivo()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
                 <div class="form-group">
                   <label class="form-label">Descripción</label>
                   <textarea id="pasivo-descripcion" class="form-textarea" rows="2"></textarea>
@@ -138,8 +161,15 @@ const PatrimonioController = {
     document.getElementById(`tab-${tab}`).classList.add('active');
   },
   
-  nuevoActivo() { document.getElementById('form-activo').classList.remove('hidden'); },
-  cancelarActivo() { document.getElementById('form-activo').classList.add('hidden'); },
+  nuevoActivo() { 
+    document.getElementById('modal-activo').classList.add('show');
+    document.getElementById('activo-form').reset();
+    document.getElementById('form-activo-title').textContent = 'Nuevo Activo';
+  },
+  cancelarActivo() { 
+    document.getElementById('modal-activo').classList.remove('show');
+    document.getElementById('activo-form').reset();
+  },
   guardarActivo(event) {
     event.preventDefault();
     const id = document.getElementById('activo-id').value;
@@ -159,7 +189,8 @@ const PatrimonioController = {
   editarActivo(id) {
     const activo = PatrimonioModel.getActivoById(id);
     if (!activo) return;
-    document.getElementById('form-activo').classList.remove('hidden');
+    document.getElementById('modal-activo').classList.add('show');
+    document.getElementById('form-activo-title').textContent = 'Editar Activo';
     document.getElementById('activo-id').value = activo.id;
     document.getElementById('activo-nombre').value = activo.nombre;
     document.getElementById('activo-valor').value = activo.valor;
@@ -175,8 +206,15 @@ const PatrimonioController = {
     );
   },
   
-  nuevoPasivo() { document.getElementById('form-pasivo').classList.remove('hidden'); },
-  cancelarPasivo() { document.getElementById('form-pasivo').classList.add('hidden'); },
+  nuevoPasivo() { 
+    document.getElementById('modal-pasivo').classList.add('show');
+    document.getElementById('pasivo-form').reset();
+    document.getElementById('form-pasivo-title').textContent = 'Nuevo Pasivo';
+  },
+  cancelarPasivo() { 
+    document.getElementById('modal-pasivo').classList.remove('show');
+    document.getElementById('pasivo-form').reset();
+  },
   guardarPasivo(event) {
     event.preventDefault();
     const id = document.getElementById('pasivo-id').value;
@@ -196,7 +234,8 @@ const PatrimonioController = {
   editarPasivo(id) {
     const pasivo = PatrimonioModel.getPasivoById(id);
     if (!pasivo) return;
-    document.getElementById('form-pasivo').classList.remove('hidden');
+    document.getElementById('modal-pasivo').classList.add('show');
+    document.getElementById('form-pasivo-title').textContent = 'Editar Pasivo';
     document.getElementById('pasivo-id').value = pasivo.id;
     document.getElementById('pasivo-nombre').value = pasivo.nombre;
     document.getElementById('pasivo-valor').value = pasivo.valor;

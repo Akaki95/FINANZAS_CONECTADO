@@ -19,45 +19,50 @@ const DeudasController = {
           </div>
         </div>
         
-        <div id="form-deuda" class="form-container hidden">
-          <div class="form-card">
-            <div class="form-header"><h3 class="form-title" id="form-deuda-title">Nueva Deuda</h3></div>
-            <form id="deuda-form" onsubmit="DeudasController.guardar(event)">
-              <input type="hidden" id="deuda-id">
-              <div class="form-group">
-                <label class="form-label">Acreedor *</label>
-                <input type="text" id="deuda-acreedor" class="form-input" required>
-              </div>
-              <div class="form-row">
+        <div id="modal-deuda" class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="form-deuda-title">Nueva Deuda</h3>
+              <button class="modal-close" onclick="DeudasController.cancelar()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="deuda-form" onsubmit="DeudasController.guardar(event)">
+                <input type="hidden" id="deuda-id">
                 <div class="form-group">
-                  <label class="form-label">Monto Inicial (€) *</label>
-                  <input type="number" id="deuda-monto-inicial" class="form-input" step="0.01" min="0.01" required>
+                  <label class="form-label">Acreedor *</label>
+                  <input type="text" id="deuda-acreedor" class="form-input" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Monto Inicial (€) *</label>
+                    <input type="number" id="deuda-monto-inicial" class="form-input" step="0.01" min="0.01" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Monto Pendiente (€) *</label>
+                    <input type="number" id="deuda-monto-pendiente" class="form-input" step="0.01" min="0" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Fecha Inicio *</label>
+                    <input type="date" id="deuda-fecha-inicio" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Fecha Vencimiento</label>
+                    <input type="date" id="deuda-fecha-vencimiento" class="form-input">
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Monto Pendiente (€) *</label>
-                  <input type="number" id="deuda-monto-pendiente" class="form-input" step="0.01" min="0" required>
+                  <label class="form-label">Descripción</label>
+                  <textarea id="deuda-descripcion" class="form-textarea" rows="3"></textarea>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Fecha Inicio *</label>
-                  <input type="date" id="deuda-fecha-inicio" class="form-input" required>
+                <div class="form-error" id="deuda-errors"></div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" onclick="DeudasController.cancelar()">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Fecha Vencimiento</label>
-                  <input type="date" id="deuda-fecha-vencimiento" class="form-input">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Descripción</label>
-                <textarea id="deuda-descripcion" class="form-textarea" rows="3"></textarea>
-              </div>
-              <div class="form-error" id="deuda-errors"></div>
-              <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="DeudasController.cancelar()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
         
@@ -96,14 +101,14 @@ const DeudasController = {
   },
   
   mostrarFormulario() {
-    document.getElementById('form-deuda').classList.remove('hidden');
+    document.getElementById('modal-deuda').classList.add('show');
     document.getElementById('deuda-form').reset();
     document.getElementById('form-deuda-title').textContent = 'Nueva Deuda';
     document.getElementById('deuda-fecha-inicio').value = new Date().toISOString().split('T')[0];
   },
   
   cancelar() {
-    document.getElementById('form-deuda').classList.add('hidden');
+    document.getElementById('modal-deuda').classList.remove('show');
   },
   
   guardar(event) {
@@ -130,7 +135,8 @@ const DeudasController = {
   editar(id) {
     const deuda = DeudaModel.getById(id);
     if (!deuda) return;
-    document.getElementById('form-deuda').classList.remove('hidden');
+    document.getElementById('modal-deuda').classList.add('show');
+    document.getElementById('form-deuda-title').textContent = 'Editar Deuda';
     document.getElementById('deuda-id').value = deuda.id;
     document.getElementById('deuda-acreedor').value = deuda.acreedor;
     document.getElementById('deuda-monto-inicial').value = deuda.montoInicial;

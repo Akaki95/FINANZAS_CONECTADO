@@ -11,43 +11,48 @@ const IngresosController = {
           <button class="btn btn-primary" onclick="IngresosController.mostrarFormulario()">➕ Nuevo Ingreso</button>
         </div>
         
-        <div id="form-ingreso" class="form-container hidden">
-          <div class="form-card">
-            <div class="form-header"><h3 class="form-title" id="form-ingreso-title">Nuevo Ingreso</h3></div>
-            <form id="ingreso-form" onsubmit="IngresosController.guardar(event)">
-              <input type="hidden" id="ingreso-id">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Fecha *</label>
-                  <input type="date" id="ingreso-fecha" class="form-input" required value="${new Date().toISOString().split('T')[0]}">
+        <div id="modal-ingreso" class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="form-ingreso-title">Nuevo Ingreso</h3>
+              <button class="modal-close" onclick="IngresosController.cancelar()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="ingreso-form" onsubmit="IngresosController.guardar(event)">
+                <input type="hidden" id="ingreso-id">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Fecha *</label>
+                    <input type="date" id="ingreso-fecha" class="form-input" required value="${new Date().toISOString().split('T')[0]}">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Monto (€) *</label>
+                    <input type="number" id="ingreso-monto" class="form-input" step="0.01" min="0.01" required>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Monto (€) *</label>
-                  <input type="number" id="ingreso-monto" class="form-input" step="0.01" min="0.01" required>
+                  <label class="form-label">Tipo *</label>
+                  <select id="ingreso-tipo" class="form-select" required>
+                    <option value="">Selecciona un tipo</option>
+                    <option value="Salario">💼 Salario</option>
+                    <option value="Freelance">💻 Freelance</option>
+                    <option value="Venta">🏷️ Venta</option>
+                    <option value="Regalo">🎁 Regalo</option>
+                    <option value="Inversión">📈 Inversión</option>
+                    <option value="Otros">📦 Otros</option>
+                  </select>
                 </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Tipo *</label>
-                <select id="ingreso-tipo" class="form-select" required>
-                  <option value="">Selecciona un tipo</option>
-                  <option value="Salario">💼 Salario</option>
-                  <option value="Freelance">💻 Freelance</option>
-                  <option value="Venta">🏷️ Venta</option>
-                  <option value="Regalo">🎁 Regalo</option>
-                  <option value="Inversión">📈 Inversión</option>
-                  <option value="Otros">📦 Otros</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Descripción</label>
-                <textarea id="ingreso-descripcion" class="form-textarea" rows="3"></textarea>
-              </div>
-              <div class="form-error" id="ingreso-errors"></div>
-              <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="IngresosController.cancelar()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-              </div>
-            </form>
+                <div class="form-group">
+                  <label class="form-label">Descripción</label>
+                  <textarea id="ingreso-descripcion" class="form-textarea" rows="3"></textarea>
+                </div>
+                <div class="form-error" id="ingreso-errors"></div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" onclick="IngresosController.cancelar()">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
         
@@ -85,14 +90,14 @@ const IngresosController = {
   },
   
   mostrarFormulario() {
-    document.getElementById('form-ingreso').classList.remove('hidden');
+    document.getElementById('modal-ingreso').classList.add('show');
     document.getElementById('ingreso-form').reset();
     document.getElementById('ingreso-fecha').value = new Date().toISOString().split('T')[0];
     document.getElementById('form-ingreso-title').textContent = 'Nuevo Ingreso';
   },
   
   cancelar() {
-    document.getElementById('form-ingreso').classList.add('hidden');
+    document.getElementById('modal-ingreso').classList.remove('show');
     document.getElementById('ingreso-form').reset();
   },
   
@@ -119,7 +124,7 @@ const IngresosController = {
   editar(id) {
     const ingreso = IngresoModel.getById(id);
     if (!ingreso) return;
-    document.getElementById('form-ingreso').classList.remove('hidden');
+    document.getElementById('modal-ingreso').classList.add('show');
     document.getElementById('form-ingreso-title').textContent = 'Editar Ingreso';
     document.getElementById('ingreso-id').value = ingreso.id;
     document.getElementById('ingreso-fecha').value = ingreso.fecha;

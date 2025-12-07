@@ -40,6 +40,9 @@
     // Configurar modal
     setupModal();
     
+    // Configurar cierre de modales de formularios
+    setupFormModals();
+    
     // Si quieres cargar datos de ejemplo, descomenta la siguiente línea:
     // cargarDatosDeEjemplo();
     
@@ -133,6 +136,24 @@
 
     // ESC para cerrar
     document.addEventListener('keydown', escHandler);
+  }
+
+  // Configurar modales de formularios (gastos, ingresos, deudas, etc)
+  function setupFormModals() {
+    // Cerrar modales al hacer clic fuera del contenido
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('show');
+      }
+    });
+
+    // Cerrar modales con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const openModals = document.querySelectorAll('.modal-overlay.show');
+        openModals.forEach(modal => modal.classList.remove('show'));
+      }
+    });
   }
   
   // Cargar datos de ejemplo si la aplicación está vacía
