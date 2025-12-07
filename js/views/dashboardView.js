@@ -1,6 +1,55 @@
 // Dashboard View - Vista principal con gráficos
 const DashboardView = {
   charts: {},
+  filtros: {
+    cashflow: { inicio: null, fin: null },
+    categorias: { inicio: null, fin: null },
+    comparacion: { inicio: null, fin: null },
+    patrimonio: { inicio: null, fin: null }
+  },
+  
+  // Inicializar fechas por defecto personalizadas
+  inicializarFechasDefecto() {
+    const hoy = new Date();
+    const anioActual = hoy.getFullYear();
+    // Flujo de efectivo: últimos 3 meses
+    const cashflowInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 2, 1);
+    const cashflowFin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    // Gastos por Categoría: primer día del mes en curso
+    const categoriasInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const categoriasFin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    // Ingresos vs Gastos: últimos 3 meses
+    const comparacionInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 2, 1);
+    const comparacionFin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    // Patrimonio: desde 1 de enero hasta 31 de diciembre del año actual
+    const patrimonioInicio = new Date(anioActual, 0, 1);
+    const patrimonioFin = new Date(anioActual, 11, 31);
+    // Formato YYYY-MM-DD local para inputs
+    const formatoFechaLocal = (fecha) => {
+      const year = fecha.getFullYear();
+      const month = String(fecha.getMonth() + 1).padStart(2, '0');
+      const day = String(fecha.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    return {
+      cashflow: {
+        inicio: formatoFechaLocal(cashflowInicio),
+        fin: formatoFechaLocal(cashflowFin)
+      },
+      categorias: {
+        inicio: formatoFechaLocal(categoriasInicio),
+        fin: formatoFechaLocal(categoriasFin)
+      },
+      comparacion: {
+        inicio: formatoFechaLocal(comparacionInicio),
+        fin: formatoFechaLocal(comparacionFin)
+      },
+      patrimonio: {
+        inicio: formatoFechaLocal(patrimonioInicio),
+        fin: formatoFechaLocal(patrimonioFin)
+      }
+    };
+  },
   
   render() {
     const mainContent = document.getElementById('main-content');
@@ -9,6 +58,14 @@ const DashboardView = {
     const mesActual = Calculations.obtenerMesActual();
     const balance = Calculations.calcularBalanceMensual(ingresos, gastos, mesActual.mes, mesActual.anio);
     const patrimonio = PatrimonioModel.getResumen();
+    
+    // Inicializar filtros por defecto
+    const fechasDefecto = this.inicializarFechasDefecto();
+    Object.keys(this.filtros).forEach(key => {
+      if (!this.filtros[key].inicio) {
+        this.filtros[key] = { ...fechasDefecto[key] };
+      }
+    });
     
     // Calcular cambios del mes anterior
     const mesAnterior = new Date();
@@ -62,24 +119,68 @@ const DashboardView = {
         <!-- Gráficos -->
         <div class="charts-container">
           <div class="chart-card">
-            <h3 class="chart-title">Flujo de Efectivo (6 meses)</h3>
+            <div class="chart-header">
+              <h3 class="chart-title">Flujo de Efectivo</h3>
+              <div class="chart-date-filter">
+                <input type="date" id="cashflow-inicio" class="date-input" 
+                       value="${this.filtros.cashflow.inicio}"
+                       onchange="DashboardView.actualizarFiltro('cashflow', 'inicio', this.value)">
+                <span class="date-separator">—</span>
+                <input type="date" id="cashflow-fin" class="date-input" 
+                       value="${this.filtros.cashflow.fin}"
+                       onchange="DashboardView.actualizarFiltro('cashflow', 'fin', this.value)">
+              </div>
+            </div>
             <canvas id="chart-cashflow" class="chart-canvas"></canvas>
           </div>
           
           <div class="chart-card">
-            <h3 class="chart-title">Gastos por Categoría</h3>
+            <div class="chart-header">
+              <h3 class="chart-title">Gastos por Categoría</h3>
+              <div class="chart-date-filter">
+                <input type="date" id="categorias-inicio" class="date-input" 
+                       value="${this.filtros.categorias.inicio}"
+                       onchange="DashboardView.actualizarFiltro('categorias', 'inicio', this.value)">
+                <span class="date-separator">—</span>
+                <input type="date" id="categorias-fin" class="date-input" 
+                       value="${this.filtros.categorias.fin}"
+                       onchange="DashboardView.actualizarFiltro('categorias', 'fin', this.value)">
+              </div>
+            </div>
             <canvas id="chart-categorias" class="chart-canvas"></canvas>
           </div>
         </div>
         
         <div class="charts-container">
           <div class="chart-card">
-            <h3 class="chart-title">Ingresos vs Gastos</h3>
+            <div class="chart-header">
+              <h3 class="chart-title">Ingresos vs Gastos</h3>
+              <div class="chart-date-filter">
+                <input type="date" id="comparacion-inicio" class="date-input" 
+                       value="${this.filtros.comparacion.inicio}"
+                       onchange="DashboardView.actualizarFiltro('comparacion', 'inicio', this.value)">
+                <span class="date-separator">—</span>
+                <input type="date" id="comparacion-fin" class="date-input" 
+                       value="${this.filtros.comparacion.fin}"
+                       onchange="DashboardView.actualizarFiltro('comparacion', 'fin', this.value)">
+              </div>
+            </div>
             <canvas id="chart-comparacion" class="chart-canvas"></canvas>
           </div>
           
           <div class="chart-card">
-            <h3 class="chart-title">Patrimonio</h3>
+            <div class="chart-header">
+              <h3 class="chart-title">Patrimonio</h3>
+              <div class="chart-date-filter">
+                <input type="date" id="patrimonio-inicio" class="date-input" 
+                       value="${this.filtros.patrimonio.inicio}"
+                       onchange="DashboardView.actualizarFiltro('patrimonio', 'inicio', this.value)">
+                <span class="date-separator">—</span>
+                <input type="date" id="patrimonio-fin" class="date-input" 
+                       value="${this.filtros.patrimonio.fin}"
+                       onchange="DashboardView.actualizarFiltro('patrimonio', 'fin', this.value)">
+              </div>
+            </div>
             <canvas id="chart-patrimonio" class="chart-canvas"></canvas>
           </div>
         </div>
@@ -94,6 +195,27 @@ const DashboardView = {
     
     // Renderizar gráficos
     this.renderCharts();
+  },
+  
+  // Actualizar filtro de fecha
+  actualizarFiltro(grafica, tipo, valor) {
+    this.filtros[grafica][tipo] = valor;
+    
+    // Re-renderizar solo la gráfica específica
+    switch(grafica) {
+      case 'cashflow':
+        this.renderCashflowChart();
+        break;
+      case 'categorias':
+        this.renderCategoriasChart();
+        break;
+      case 'comparacion':
+        this.renderComparacionChart();
+        break;
+      case 'patrimonio':
+        this.renderPatrimonioChart();
+        break;
+    }
   },
   
   renderTransaccionesRecientes(gastos, ingresos) {
@@ -135,9 +257,23 @@ const DashboardView = {
     const ctx = document.getElementById('chart-cashflow');
     if (!ctx) return;
     
-    const gastos = GastoModel.getAll();
-    const ingresos = IngresoModel.getAll();
-    const cashflow = Calculations.calcularCashflow(ingresos, gastos, 6);
+    const filtro = this.filtros.cashflow;
+    let gastos = GastoModel.getAll();
+    let ingresos = IngresoModel.getAll();
+    
+    // Aplicar filtro de fechas si está definido
+    if (filtro.inicio && filtro.fin) {
+      gastos = Calculations.filtrarPorRango(gastos, filtro.inicio, filtro.fin);
+      ingresos = Calculations.filtrarPorRango(ingresos, filtro.inicio, filtro.fin);
+    }
+    
+    // Calcular meses entre las fechas
+    const inicio = new Date(filtro.inicio);
+    const fin = new Date(filtro.fin);
+    const mesesDiferencia = Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24 * 30));
+    const meses = Math.max(1, Math.min(mesesDiferencia, 12));
+    
+    const cashflow = Calculations.calcularCashflowRango(ingresos, gastos, filtro.inicio, filtro.fin);
     
     if (this.charts.cashflow) {
       this.charts.cashflow.destroy();
@@ -193,7 +329,14 @@ const DashboardView = {
     const ctx = document.getElementById('chart-categorias');
     if (!ctx) return;
     
-    const gastos = GastoModel.getAll();
+    const filtro = this.filtros.categorias;
+    let gastos = GastoModel.getAll();
+    
+    // Aplicar filtro de fechas
+    if (filtro.inicio && filtro.fin) {
+      gastos = Calculations.filtrarPorRango(gastos, filtro.inicio, filtro.fin);
+    }
+    
     const categorias = Calculations.calcularTotalPorCategoria(gastos);
     
     if (this.charts.categorias) {
@@ -232,9 +375,17 @@ const DashboardView = {
     const ctx = document.getElementById('chart-comparacion');
     if (!ctx) return;
     
-    const gastos = GastoModel.getAll();
-    const ingresos = IngresoModel.getAll();
-    const cashflow = Calculations.calcularCashflow(ingresos, gastos, 6);
+    const filtro = this.filtros.comparacion;
+    let gastos = GastoModel.getAll();
+    let ingresos = IngresoModel.getAll();
+    
+    // Aplicar filtro de fechas
+    if (filtro.inicio && filtro.fin) {
+      gastos = Calculations.filtrarPorRango(gastos, filtro.inicio, filtro.fin);
+      ingresos = Calculations.filtrarPorRango(ingresos, filtro.inicio, filtro.fin);
+    }
+    
+    const cashflow = Calculations.calcularCashflowRango(ingresos, gastos, filtro.inicio, filtro.fin);
     
     if (this.charts.comparacion) {
       this.charts.comparacion.destroy();
@@ -278,7 +429,27 @@ const DashboardView = {
     const ctx = document.getElementById('chart-patrimonio');
     if (!ctx) return;
     
-    const resumen = PatrimonioModel.getResumen();
+    const filtro = this.filtros.patrimonio;
+    let activos = PatrimonioModel.getAllActivos();
+    let pasivos = PatrimonioModel.getAllPasivos();
+    
+    // Aplicar filtro de fechas si existe fechaAdquisicion
+    if (filtro.inicio && filtro.fin) {
+      activos = activos.filter(a => {
+        if (!a.fechaAdquisicion) return true;
+        const fecha = new Date(a.fechaAdquisicion);
+        return fecha >= new Date(filtro.inicio) && fecha <= new Date(filtro.fin);
+      });
+      pasivos = pasivos.filter(p => {
+        if (!p.fechaAdquisicion) return true;
+        const fecha = new Date(p.fechaAdquisicion);
+        return fecha >= new Date(filtro.inicio) && fecha <= new Date(filtro.fin);
+      });
+    }
+    
+    const totalActivos = Calculations.sumarMontos(activos);
+    const totalPasivos = Calculations.sumarMontos(pasivos);
+    const patrimonioNeto = totalActivos - totalPasivos;
     
     if (this.charts.patrimonio) {
       this.charts.patrimonio.destroy();
@@ -291,17 +462,17 @@ const DashboardView = {
         datasets: [
           {
             label: 'Activos',
-            data: [resumen.activos],
+            data: [totalActivos],
             backgroundColor: '#4CAF50'
           },
           {
             label: 'Pasivos',
-            data: [resumen.pasivos],
+            data: [totalPasivos],
             backgroundColor: '#f44336'
           },
           {
             label: 'Neto',
-            data: [resumen.patrimonioNeto],
+            data: [patrimonioNeto],
             backgroundColor: '#2196F3'
           }
         ]

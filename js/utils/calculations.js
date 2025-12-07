@@ -39,6 +39,35 @@ const Calculations = {
     return resultado;
   },
   
+  // Calcular cashflow por rango de fechas
+  calcularCashflowRango(ingresos, gastos, fechaInicio, fechaFin) {
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+    const resultado = [];
+    
+    // Iterar mes por mes desde inicio hasta fin
+    const fechaActual = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+    const fechaLimite = new Date(fin.getFullYear(), fin.getMonth(), 1);
+    
+    while (fechaActual <= fechaLimite) {
+      const mes = fechaActual.getMonth() + 1;
+      const anio = fechaActual.getFullYear();
+      
+      const balance = this.calcularBalanceMensual(ingresos, gastos, mes, anio);
+      
+      resultado.push({
+        mes: fechaActual.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }),
+        ingresos: balance.ingresos,
+        gastos: balance.gastos,
+        balance: balance.balance
+      });
+      
+      fechaActual.setMonth(fechaActual.getMonth() + 1);
+    }
+    
+    return resultado;
+  },
+  
   // Calcular total por categoría
   calcularTotalPorCategoria(registros, campo = 'categoria') {
     const totales = {};
