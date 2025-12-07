@@ -24,6 +24,8 @@ const ConfigModel = {
             { valor: 'Educación', etiqueta: '📚 Educación', icono: '📚' },
             { valor: 'Vivienda', etiqueta: '🏠 Vivienda', icono: '🏠' },
             { valor: 'Servicios', etiqueta: '💡 Servicios', icono: '💡' },
+            { valor: 'Pago Deuda', etiqueta: '💳 Pago Deuda', icono: '💳' },
+            { valor: 'Préstamo', etiqueta: '💸 Préstamo', icono: '💸' },
             { valor: 'Otros', etiqueta: '📦 Otros', icono: '📦' }
           ]
         },
@@ -47,6 +49,8 @@ const ConfigModel = {
             { valor: 'Venta', etiqueta: '🏷️ Venta', icono: '🏷️' },
             { valor: 'Regalo', etiqueta: '🎁 Regalo', icono: '🎁' },
             { valor: 'Inversión', etiqueta: '📈 Inversión', icono: '📈' },
+            { valor: 'Deuda', etiqueta: '💳 Deuda', icono: '💳' },
+            { valor: 'Cobro Préstamo', etiqueta: '💸 Cobro Préstamo', icono: '💸' },
             { valor: 'Otros', etiqueta: '📦 Otros', icono: '📦' }
           ]
         },

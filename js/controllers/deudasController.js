@@ -65,6 +65,37 @@ const DeudasController = {
             </div>
           </div>
         </div>
+
+        <div id="modal-pago" class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title">Registrar Pago</h3>
+              <button class="modal-close" onclick="DeudasController.cancelarPago()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="pago-form" onsubmit="DeudasController.confirmarPago(event)">
+                <input type="hidden" id="pago-deuda-id">
+                <div class="form-group">
+                  <label class="form-label">Acreedor</label>
+                  <input type="text" id="pago-acreedor" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Monto Pendiente</label>
+                  <input type="text" id="pago-pendiente" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Monto del Pago (€) *</label>
+                  <input type="number" id="pago-monto" class="form-input" step="0.01" min="0.01" required autofocus>
+                </div>
+                <div class="form-error" id="pago-errors"></div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" onclick="DeudasController.cancelarPago()">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Registrar Pago</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         
         <div class="card">
           <div class="card-title">Listado de Deudas</div>
@@ -75,24 +106,56 @@ const DeudasController = {
             </div>
           ` : `
             <ul class="items-list">
-              ${deudas.map(d => `
-                <li class="item">
-                  <div class="item-content">
-                    <div class="item-title">${d.acreedor}</div>
-                    <div class="item-subtitle">
-                      Inicial: ${Calculations.formatearMoneda(d.montoInicial)} | 
-                      Inicio: ${new Date(d.fechaInicio).toLocaleDateString('es-ES')}
-                      ${d.fechaVencimiento ? ' | Vence: ' + new Date(d.fechaVencimiento).toLocaleDateString('es-ES') : ''}
+              ${deudas.map(d => {
+                const pagos = DeudaModel.getPagosDeuda(d.id);
+                const totalPagado = d.montoInicial - d.montoPendiente;
+                return `
+                <li class="item item-expandible" id="deuda-${d.id}">
+                  <div class="item-main" onclick="DeudasController.toggleDetalles('${d.id}')">
+                    <div class="item-content">
+                      <div class="item-title">${d.acreedor}</div>
+                      <div class="item-subtitle">
+                        Inicial: ${Calculations.formatearMoneda(d.montoInicial)} | 
+                        Inicio: ${new Date(d.fechaInicio).toLocaleDateString('es-ES')}
+                        ${d.fechaVencimiento ? ' | Vence: ' + new Date(d.fechaVencimiento).toLocaleDateString('es-ES') : ''}
+                      </div>
+                    </div>
+                    <div class="item-amount text-danger">${Calculations.formatearMoneda(d.montoPendiente)}</div>
+                    <div class="item-actions" onclick="event.stopPropagation()">
+                      <button class="item-action-btn" onclick="DeudasController.registrarPago('${d.id}')">💰 Pago</button>
+                      <button class="item-action-btn" onclick="DeudasController.editar('${d.id}')">✏️</button>
+                      <button class="item-action-btn delete" onclick="DeudasController.eliminar('${d.id}')">🗑️</button>
                     </div>
                   </div>
-                  <div class="item-amount text-danger">${Calculations.formatearMoneda(d.montoPendiente)}</div>
-                  <div class="item-actions">
-                    <button class="item-action-btn" onclick="DeudasController.registrarPago('${d.id}')">💰 Pago</button>
-                    <button class="item-action-btn" onclick="DeudasController.editar('${d.id}')">✏️</button>
-                    <button class="item-action-btn delete" onclick="DeudasController.eliminar('${d.id}')">🗑️</button>
+                  <div class="item-detalles" id="detalles-${d.id}" style="display: none;">
+                    <div class="deuda-resumen">
+                      <div class="deuda-stat">
+                        <span class="deuda-stat-label">Total Pagado:</span>
+                        <span class="deuda-stat-value text-success">${Calculations.formatearMoneda(totalPagado)}</span>
+                      </div>
+                      <div class="deuda-stat">
+                        <span class="deuda-stat-label">Progreso:</span>
+                        <span class="deuda-stat-value">${Math.round((totalPagado / d.montoInicial) * 100)}%</span>
+                      </div>
+                    </div>
+                    ${pagos.length > 0 ? `
+                      <div class="pagos-historial">
+                        <h4 class="pagos-titulo">Historial de Pagos</h4>
+                        <ul class="pagos-lista">
+                          ${pagos.map(p => `
+                            <li class="pago-item">
+                              <span class="pago-fecha">${new Date(p.fecha).toLocaleDateString('es-ES')}</span>
+                              <span class="pago-monto">${Calculations.formatearMoneda(p.monto)}</span>
+                            </li>
+                          `).join('')}
+                        </ul>
+                      </div>
+                    ` : `
+                      <div class="empty-state-small">No hay pagos registrados aún</div>
+                    `}
                   </div>
                 </li>
-              `).join('')}
+              `}).join('')}
             </ul>
           `}
         </div>
@@ -157,13 +220,46 @@ const DeudasController = {
   },
   
   registrarPago(id) {
-    const monto = prompt('¿Cuánto pagaste?');
-    if (!monto) return;
+    const deuda = DeudaModel.getById(id);
+    if (!deuda) return;
+    
+    document.getElementById('modal-pago').classList.add('show');
+    document.getElementById('pago-deuda-id').value = deuda.id;
+    document.getElementById('pago-acreedor').value = deuda.acreedor;
+    document.getElementById('pago-pendiente').value = Calculations.formatearMoneda(deuda.montoPendiente);
+    document.getElementById('pago-monto').value = '';
+    document.getElementById('pago-monto').max = deuda.montoPendiente;
+    document.getElementById('pago-errors').textContent = '';
+  },
+  
+  cancelarPago() {
+    document.getElementById('modal-pago').classList.remove('show');
+  },
+  
+  confirmarPago(event) {
+    event.preventDefault();
+    const id = document.getElementById('pago-deuda-id').value;
+    const monto = parseFloat(document.getElementById('pago-monto').value);
+    
     try {
-      DeudaModel.registrarPago(id, parseFloat(monto));
+      DeudaModel.registrarPago(id, monto);
+      this.cancelarPago();
       this.render();
     } catch (error) {
-      alert(error.message);
+      document.getElementById('pago-errors').textContent = error.message;
+    }
+  },
+  
+  toggleDetalles(id) {
+    const detalles = document.getElementById(`detalles-${id}`);
+    const item = document.getElementById(`deuda-${id}`);
+    
+    if (detalles.style.display === 'none') {
+      detalles.style.display = 'block';
+      item.classList.add('expandido');
+    } else {
+      detalles.style.display = 'none';
+      item.classList.remove('expandido');
     }
   }
 };

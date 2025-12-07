@@ -397,6 +397,114 @@
   100% { background-position: -200% 0; }
 }
 
+/* Items expandibles (deudas con historial) */
+.item-expandible {
+  flex-direction: column;
+  align-items: stretch;
+  cursor: pointer;
+}
+
+.item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.item-expandible .item-actions {
+  pointer-events: auto;
+}
+
+.item-detalles {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 2px solid var(--border-color);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deuda-resumen {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.deuda-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deuda-stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.deuda-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pagos-historial {
+  margin-top: var(--spacing-md);
+}
+
+.pagos-titulo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.pagos-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pago-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+}
+
+.pago-fecha {
+  color: var(--text-secondary);
+}
+
+.pago-monto {
+  font-weight: 600;
+  color: var(--success-color);
+}
+
+.empty-state-small {
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 /* Responsive forms */
 @media (max-width: 768px) {
   .form-container {
@@ -417,6 +525,12 @@
     gap: var(--spacing-md);
   }
   
+  .item-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  
   .item-amount {
     margin-right: 0;
   }
@@ -424,5 +538,10 @@
   .item-actions {
     width: 100%;
     justify-content: flex-end;
+  }
+  
+  .deuda-resumen {
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
 }

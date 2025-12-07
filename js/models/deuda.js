@@ -50,6 +50,20 @@ const DeudaModel = {
       data: deuda
     });
     
+    // Crear ingreso automático por el monto de la deuda
+    try {
+      const ingresoDeuda = {
+        fecha: deuda.fechaInicio,
+        monto: deuda.montoInicial,
+        tipo: 'Deuda',
+        descripcion: `Deuda contraída con ${deuda.acreedor}${deuda.descripcion ? ' - ' + deuda.descripcion : ''}`
+      };
+      IngresoModel.create(ingresoDeuda);
+      Logger.success('Ingreso automático creado por deuda');
+    } catch (error) {
+      Logger.error('Error creando ingreso automático por deuda', error);
+    }
+    
     Logger.success('Deuda creada', deuda);
     return deuda;
   },
@@ -107,10 +121,26 @@ const DeudaModel = {
       throw new Error('El pago no puede ser mayor que el monto pendiente');
     }
     
-    return this.update(id, {
+    const resultado = this.update(id, {
       ...deuda,
       montoPendiente: nuevoPendiente
     });
+    
+    // Crear gasto automático por el pago de la deuda
+    try {
+      const gastoPago = {
+        fecha: new Date().toISOString().split('T')[0],
+        monto: montoPago,
+        categoria: 'Pago Deuda',
+        descripcion: `Pago de deuda a ${deuda.acreedor}${deuda.descripcion ? ' - ' + deuda.descripcion : ''}`
+      };
+      GastoModel.create(gastoPago);
+      Logger.success('Gasto automático creado por pago de deuda');
+    } catch (error) {
+      Logger.error('Error creando gasto automático por pago de deuda', error);
+    }
+    
+    return resultado;
   },
   
   // Eliminar deuda
@@ -153,6 +183,20 @@ const DeudaModel = {
   // Calcular total pendiente
   getTotalPendiente() {
     return this.getActivas().reduce((sum, d) => sum + d.montoPendiente, 0);
+  },
+  
+  // Obtener historial de pagos de una deuda
+  getPagosDeuda(deudaId) {
+    const deuda = this.getById(deudaId);
+    if (!deuda) return [];
+    
+    // Buscar gastos con categoría 'Pago Deuda' que mencionen el acreedor
+    const gastos = GastoModel.getAll();
+    return gastos.filter(g => 
+      g.categoria === 'Pago Deuda' && 
+      g.descripcion && 
+      g.descripcion.toLowerCase().includes(deuda.acreedor.toLowerCase())
+    ).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
   }
 };
 

@@ -50,6 +50,20 @@ const PrestamoModel = {
       data: prestamo
     });
     
+    // Crear gasto automático por el préstamo
+    try {
+      const gastoPrestamo = {
+        fecha: prestamo.fechaPrestamo,
+        monto: prestamo.montoInicial,
+        categoria: 'Préstamo',
+        descripcion: `Préstamo otorgado a ${prestamo.persona}${prestamo.descripcion ? ' - ' + prestamo.descripcion : ''}`
+      };
+      GastoModel.create(gastoPrestamo);
+      Logger.success('Gasto automático creado por préstamo');
+    } catch (error) {
+      Logger.error('Error creando gasto automático por préstamo', error);
+    }
+    
     Logger.success('Préstamo creado', prestamo);
     return prestamo;
   },
@@ -107,10 +121,26 @@ const PrestamoModel = {
       throw new Error('El pago no puede ser mayor que el monto pendiente');
     }
     
-    return this.update(id, {
+    const resultado = this.update(id, {
       ...prestamo,
       montoPendiente: nuevoPendiente
     });
+    
+    // Crear ingreso automático por el cobro del préstamo
+    try {
+      const ingresoCobro = {
+        fecha: new Date().toISOString().split('T')[0],
+        monto: montoPago,
+        tipo: 'Cobro Préstamo',
+        descripcion: `Cobro de préstamo a ${prestamo.persona}${prestamo.descripcion ? ' - ' + prestamo.descripcion : ''}`
+      };
+      IngresoModel.create(ingresoCobro);
+      Logger.success('Ingreso automático creado por cobro de préstamo');
+    } catch (error) {
+      Logger.error('Error creando ingreso automático por cobro de préstamo', error);
+    }
+    
+    return resultado;
   },
   
   // Eliminar préstamo
@@ -153,6 +183,20 @@ const PrestamoModel = {
   // Calcular total pendiente de cobro
   getTotalPendiente() {
     return this.getActivos().reduce((sum, p) => sum + p.montoPendiente, 0);
+  },
+  
+  // Obtener historial de cobros de un préstamo
+  getCobros(prestamoId) {
+    const prestamo = this.getById(prestamoId);
+    if (!prestamo) return [];
+    
+    // Buscar ingresos con tipo 'Cobro Préstamo' que mencionen la persona
+    const ingresos = IngresoModel.getAll();
+    return ingresos.filter(i => 
+      i.tipo === 'Cobro Préstamo' && 
+      i.descripcion && 
+      i.descripcion.toLowerCase().includes(prestamo.persona.toLowerCase())
+    ).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
   }
 };
 

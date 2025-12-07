@@ -65,6 +65,37 @@ const PrestamosController = {
             </div>
           </div>
         </div>
+
+        <div id="modal-cobro" class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title">Registrar Cobro</h3>
+              <button class="modal-close" onclick="PrestamosController.cancelarCobro()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="cobro-form" onsubmit="PrestamosController.confirmarCobro(event)">
+                <input type="hidden" id="cobro-prestamo-id">
+                <div class="form-group">
+                  <label class="form-label">Persona</label>
+                  <input type="text" id="cobro-persona" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Monto Pendiente</label>
+                  <input type="text" id="cobro-pendiente" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Monto del Cobro (€) *</label>
+                  <input type="number" id="cobro-monto" class="form-input" step="0.01" min="0.01" required autofocus>
+                </div>
+                <div class="form-error" id="cobro-errors"></div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" onclick="PrestamosController.cancelarCobro()">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Registrar Cobro</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         
         <div class="card">
           <div class="card-title">Listado de Préstamos</div>
@@ -75,24 +106,56 @@ const PrestamosController = {
             </div>
           ` : `
             <ul class="items-list">
-              ${prestamos.map(p => `
-                <li class="item">
-                  <div class="item-content">
-                    <div class="item-title">${p.persona}</div>
-                    <div class="item-subtitle">
-                      Inicial: ${Calculations.formatearMoneda(p.montoInicial)} | 
-                      Prestado: ${new Date(p.fechaPrestamo).toLocaleDateString('es-ES')}
-                      ${p.fechaDevolucion ? ' | Devolución: ' + new Date(p.fechaDevolucion).toLocaleDateString('es-ES') : ''}
+              ${prestamos.map(p => {
+                const cobros = PrestamoModel.getCobros(p.id);
+                const totalCobrado = p.montoInicial - p.montoPendiente;
+                return `
+                <li class="item item-expandible" id="prestamo-${p.id}">
+                  <div class="item-main" onclick="PrestamosController.toggleDetalles('${p.id}')">
+                    <div class="item-content">
+                      <div class="item-title">${p.persona}</div>
+                      <div class="item-subtitle">
+                        Inicial: ${Calculations.formatearMoneda(p.montoInicial)} | 
+                        Prestado: ${new Date(p.fechaPrestamo).toLocaleDateString('es-ES')}
+                        ${p.fechaDevolucion ? ' | Devolución: ' + new Date(p.fechaDevolucion).toLocaleDateString('es-ES') : ''}
+                      </div>
+                    </div>
+                    <div class="item-amount text-success">${Calculations.formatearMoneda(p.montoPendiente)}</div>
+                    <div class="item-actions" onclick="event.stopPropagation()">
+                      <button class="item-action-btn" onclick="PrestamosController.registrarPago('${p.id}')">💰 Cobro</button>
+                      <button class="item-action-btn" onclick="PrestamosController.editar('${p.id}')">✏️</button>
+                      <button class="item-action-btn delete" onclick="PrestamosController.eliminar('${p.id}')">🗑️</button>
                     </div>
                   </div>
-                  <div class="item-amount text-success">${Calculations.formatearMoneda(p.montoPendiente)}</div>
-                  <div class="item-actions">
-                    <button class="item-action-btn" onclick="PrestamosController.registrarPago('${p.id}')">💰 Cobro</button>
-                    <button class="item-action-btn" onclick="PrestamosController.editar('${p.id}')">✏️</button>
-                    <button class="item-action-btn delete" onclick="PrestamosController.eliminar('${p.id}')">🗑️</button>
+                  <div class="item-detalles" id="detalles-${p.id}" style="display: none;">
+                    <div class="deuda-resumen">
+                      <div class="deuda-stat">
+                        <span class="deuda-stat-label">Total Cobrado:</span>
+                        <span class="deuda-stat-value text-success">${Calculations.formatearMoneda(totalCobrado)}</span>
+                      </div>
+                      <div class="deuda-stat">
+                        <span class="deuda-stat-label">Progreso:</span>
+                        <span class="deuda-stat-value">${Math.round((totalCobrado / p.montoInicial) * 100)}%</span>
+                      </div>
+                    </div>
+                    ${cobros.length > 0 ? `
+                      <div class="pagos-historial">
+                        <h4 class="pagos-titulo">Historial de Cobros</h4>
+                        <ul class="pagos-lista">
+                          ${cobros.map(c => `
+                            <li class="pago-item">
+                              <span class="pago-fecha">${new Date(c.fecha).toLocaleDateString('es-ES')}</span>
+                              <span class="pago-monto">${Calculations.formatearMoneda(c.monto)}</span>
+                            </li>
+                          `).join('')}
+                        </ul>
+                      </div>
+                    ` : `
+                      <div class="empty-state-small">No hay cobros registrados aún</div>
+                    `}
                   </div>
                 </li>
-              `).join('')}
+              `}).join('')}
             </ul>
           `}
         </div>
@@ -157,13 +220,46 @@ const PrestamosController = {
   },
   
   registrarPago(id) {
-    const monto = prompt('¿Cuánto te devolvieron?');
-    if (!monto) return;
+    const prestamo = PrestamoModel.getById(id);
+    if (!prestamo) return;
+    
+    document.getElementById('modal-cobro').classList.add('show');
+    document.getElementById('cobro-prestamo-id').value = prestamo.id;
+    document.getElementById('cobro-persona').value = prestamo.persona;
+    document.getElementById('cobro-pendiente').value = Calculations.formatearMoneda(prestamo.montoPendiente);
+    document.getElementById('cobro-monto').value = '';
+    document.getElementById('cobro-monto').max = prestamo.montoPendiente;
+    document.getElementById('cobro-errors').textContent = '';
+  },
+  
+  cancelarCobro() {
+    document.getElementById('modal-cobro').classList.remove('show');
+  },
+  
+  confirmarCobro(event) {
+    event.preventDefault();
+    const id = document.getElementById('cobro-prestamo-id').value;
+    const monto = parseFloat(document.getElementById('cobro-monto').value);
+    
     try {
-      PrestamoModel.registrarPago(id, parseFloat(monto));
+      PrestamoModel.registrarPago(id, monto);
+      this.cancelarCobro();
       this.render();
     } catch (error) {
-      alert(error.message);
+      document.getElementById('cobro-errors').textContent = error.message;
+    }
+  },
+  
+  toggleDetalles(id) {
+    const detalles = document.getElementById(`detalles-${id}`);
+    const item = document.getElementById(`prestamo-${id}`);
+    
+    if (detalles.style.display === 'none') {
+      detalles.style.display = 'block';
+      item.classList.add('expandido');
+    } else {
+      detalles.style.display = 'none';
+      item.classList.remove('expandido');
     }
   }
 };
