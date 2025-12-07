@@ -20,32 +20,7 @@ const IngresosController = {
             <div class="modal-body">
               <form id="ingreso-form" onsubmit="IngresosController.guardar(event)">
                 <input type="hidden" id="ingreso-id">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Fecha *</label>
-                    <input type="date" id="ingreso-fecha" class="form-input" required value="${new Date().toISOString().split('T')[0]}">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Monto (€) *</label>
-                    <input type="number" id="ingreso-monto" class="form-input" step="0.01" min="0.01" required>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Tipo *</label>
-                  <select id="ingreso-tipo" class="form-select" required>
-                    <option value="">Selecciona un tipo</option>
-                    <option value="Salario">💼 Salario</option>
-                    <option value="Freelance">💻 Freelance</option>
-                    <option value="Venta">🏷️ Venta</option>
-                    <option value="Regalo">🎁 Regalo</option>
-                    <option value="Inversión">📈 Inversión</option>
-                    <option value="Otros">📦 Otros</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Descripción</label>
-                  <textarea id="ingreso-descripcion" class="form-textarea" rows="3"></textarea>
-                </div>
+                ${FormBuilder.renderInRows('ingresos', 'ingreso-form')}
                 <div class="form-error" id="ingreso-errors"></div>
                 <div class="form-actions">
                   <button type="button" class="btn btn-secondary" onclick="IngresosController.cancelar()">Cancelar</button>
@@ -91,45 +66,57 @@ const IngresosController = {
   
   mostrarFormulario() {
     document.getElementById('modal-ingreso').classList.add('show');
-    document.getElementById('ingreso-form').reset();
-    document.getElementById('ingreso-fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('ingreso-id').value = '';
     document.getElementById('form-ingreso-title').textContent = 'Nuevo Ingreso';
+    FormBuilder.clearForm('ingresos');
+    ValidationService.limpiarErrores('ingreso-errors');
   },
   
   cancelar() {
     document.getElementById('modal-ingreso').classList.remove('show');
-    document.getElementById('ingreso-form').reset();
+    FormBuilder.clearForm('ingresos');
+    ValidationService.limpiarErrores('ingreso-errors');
   },
   
   guardar(event) {
     event.preventDefault();
+    
+    // Validar formulario dinámico
+    const validation = FormBuilder.validateForm('ingresos');
+    if (!validation.valid) {
+      ValidationService.mostrarErrores(validation.errors, 'ingreso-errors');
+      return;
+    }
+    
     const id = document.getElementById('ingreso-id').value;
-    const data = {
-      fecha: document.getElementById('ingreso-fecha').value,
-      monto: document.getElementById('ingreso-monto').value,
-      tipo: document.getElementById('ingreso-tipo').value,
-      descripcion: document.getElementById('ingreso-descripcion').value
-    };
+    const ingresoData = FormBuilder.extractFormData('ingresos');
     
     try {
-      id ? IngresoModel.update(id, data) : IngresoModel.create(data);
+      if (id) {
+        IngresoModel.update(id, ingresoData);
+      } else {
+        IngresoModel.create(ingresoData);
+      }
+      
       this.cancelar();
       this.render();
     } catch (error) {
+      Logger.error('Error guardando ingreso', error);
       ValidationService.mostrarErrores([error.message], 'ingreso-errors');
     }
   },
   
   editar(id) {
     const ingreso = IngresoModel.getById(id);
-    if (!ingreso) return;
+    if (!ingreso) {
+      return;
+    }
+    
     document.getElementById('modal-ingreso').classList.add('show');
     document.getElementById('form-ingreso-title').textContent = 'Editar Ingreso';
     document.getElementById('ingreso-id').value = ingreso.id;
-    document.getElementById('ingreso-fecha').value = ingreso.fecha;
-    document.getElementById('ingreso-monto').value = ingreso.monto;
-    document.getElementById('ingreso-tipo').value = ingreso.tipo;
-    document.getElementById('ingreso-descripcion').value = ingreso.descripcion || '';
+    FormBuilder.fillForm('ingresos', ingreso);
+    ValidationService.limpiarErrores('ingreso-errors');
   },
   
   eliminar(id) {
