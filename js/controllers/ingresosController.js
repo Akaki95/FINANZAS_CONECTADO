@@ -2,7 +2,7 @@
 const IngresosController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const ingresos = IngresoModel.getAll();
+    const ingresos = IngresoModel.getAll().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     
     mainContent.innerHTML = `
       <div class="container">

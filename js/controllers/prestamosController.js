@@ -2,7 +2,7 @@
 const PrestamosController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const prestamos = PrestamoModel.getAll();
+    const prestamos = PrestamoModel.getAll().sort((a, b) => new Date(b.fechaPrestamo) - new Date(a.fechaPrestamo));
     const totalPendiente = PrestamoModel.getTotalPendiente();
     
     mainContent.innerHTML = `

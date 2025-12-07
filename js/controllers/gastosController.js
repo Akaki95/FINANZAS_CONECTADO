@@ -4,7 +4,7 @@ const GastosController = {
   // Renderizar vista de gastos
   render() {
     const mainContent = document.getElementById('main-content');
-    const gastos = GastoModel.getAll();
+    const gastos = GastoModel.getAll().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     const categorias = GastoModel.getCategorias();
     
     mainContent.innerHTML = `

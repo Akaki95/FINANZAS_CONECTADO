@@ -2,8 +2,8 @@
 const PatrimonioController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const activos = PatrimonioModel.getAllActivos();
-    const pasivos = PatrimonioModel.getAllPasivos();
+    const activos = PatrimonioModel.getAllActivos().sort((a, b) => new Date(b.fechaAdquisicion || '1900-01-01') - new Date(a.fechaAdquisicion || '1900-01-01'));
+    const pasivos = PatrimonioModel.getAllPasivos().sort((a, b) => new Date(b.fechaAdquisicion || '1900-01-01') - new Date(a.fechaAdquisicion || '1900-01-01'));
     const resumen = PatrimonioModel.getResumen();
     
     mainContent.innerHTML = `

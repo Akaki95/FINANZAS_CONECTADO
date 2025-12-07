@@ -2,7 +2,7 @@
 const DeudasController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const deudas = DeudaModel.getAll();
+    const deudas = DeudaModel.getAll().sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio));
     const totalPendiente = DeudaModel.getTotalPendiente();
     
     mainContent.innerHTML = `
