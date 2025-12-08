@@ -72,6 +72,19 @@
   padding: var(--spacing-lg);
 }
 
+/* Modal Large - Mayor z-index para iconos y selectores */
+.modal-content.modal-large {
+  max-width: 800px;
+}
+
+.modal-overlay#modal-icons {
+  z-index: 10001;
+}
+
+.modal-content.modal-small {
+  max-width: 400px;
+}
+
 /* Formularios específicos */
 .form-container {
   max-width: 600px;

@@ -42,6 +42,8 @@ const ConfigController = {
 
         <!-- Contenido del módulo -->
         <div class="config-content">
+          ${this.currentModule.startsWith('patrimonio_') ? this.renderCategoriesSection() : ''}
+          
           <div class="config-actions">
             <button class="btn btn-primary" onclick="ConfigController.showAddFieldModal()">
               ➕ Añadir Campo
@@ -193,8 +195,57 @@ const ConfigController = {
             </div>
           </div>
         </div>
+
+        <!-- Modal: Añadir/Editar Categoría -->
+        <div id="modal-category" class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="category-modal-title">Añadir Categoría</h3>
+              <button class="modal-close" onclick="ConfigController.closeCategoryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="category-form" onsubmit="ConfigController.saveCategory(event)">
+                <input type="hidden" id="category-id">
+                
+                <div class="form-group">
+                  <label class="form-label">Nombre de la Categoría *</label>
+                  <input type="text" id="category-nombre" class="form-input" required 
+                         placeholder="Ej: Criptomonedas">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Icono</label>
+                  <input type="text" id="category-icono-preview" class="form-input icon-preview" 
+                         readonly placeholder="Haz clic para seleccionar">
+                  <input type="hidden" id="category-icono">
+                  <button type="button" class="btn btn-small btn-secondary" 
+                          onclick="ConfigController.showIconPicker()">
+                    🎨 Seleccionar Icono
+                  </button>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Texto de Ayuda</label>
+                  <textarea id="category-ayuda" class="form-textarea" rows="2" 
+                            placeholder="Describe qué tipo de activos/pasivos van en esta categoría"></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" 
+                          onclick="ConfigController.closeCategoryModal()">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     `;
+    
+    // Inicializar drag and drop para categorías si es patrimonio
+    if (this.currentModule.startsWith('patrimonio_')) {
+      setTimeout(() => this.initCategoryDragAndDrop(), 0);
+    }
   },
 
   renderFieldsList() {
@@ -473,8 +524,18 @@ const ConfigController = {
   },
 
   selectIcon(icon) {
-    document.getElementById('option-icono').value = icon;
-    document.getElementById('option-icono-preview').value = icon;
+    // Comprobar si estamos editando una categoría o una opción
+    const categoryIconInput = document.getElementById('category-icono');
+    const optionIconInput = document.getElementById('option-icono');
+    
+    if (categoryIconInput && document.getElementById('modal-category').classList.contains('show')) {
+      document.getElementById('category-icono').value = icon;
+      document.getElementById('category-icono-preview').value = icon;
+    } else if (optionIconInput) {
+      document.getElementById('option-icono').value = icon;
+      document.getElementById('option-icono-preview').value = icon;
+    }
+    
     this.closeIconPicker();
   },
 
@@ -536,6 +597,174 @@ const ConfigController = {
   initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
+  },
+
+  // === GESTIÓN DE CATEGORÍAS (PATRIMONIO) ===
+
+  renderCategoriesSection() {
+    const categorias = ConfigModel.getCategorias(this.currentModule);
+    
+    return `
+      <div class="config-section">
+        <div class="section-header">
+          <h3>📁 Categorías</h3>
+          <button class="btn btn-small btn-primary" onclick="ConfigController.showAddCategoryModal()">
+            ➕ Añadir Categoría
+          </button>
+        </div>
+        <div class="categories-list" id="categories-list">
+          ${categorias.length === 0 ? 
+            '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No hay categorías configuradas</div></div>' :
+            categorias.map((cat, index) => `
+              <div class="category-item draggable ${cat.sistema ? 'category-sistema' : ''}" draggable="true" data-index="${index}" data-id="${cat.id}">
+                <div class="drag-handle">⋮⋮</div>
+                <div class="category-info">
+                  <span class="category-icon">${cat.icono || '📁'}</span>
+                  <div class="category-details">
+                    <div class="category-name">
+                      ${cat.nombre}
+                      ${cat.sistema ? '<span class="badge-sistema">🔒 Sistema</span>' : ''}
+                    </div>
+                    <div class="category-help">${cat.ayuda || ''}</div>
+                  </div>
+                </div>
+                <div class="category-actions">
+                  ${!cat.sistema ? `
+                    <button class="btn btn-small btn-secondary" onclick="ConfigController.editCategory('${cat.id}')">✏️</button>
+                    <button class="btn btn-small btn-danger" onclick="ConfigController.deleteCategory('${cat.id}')">🗑️</button>
+                  ` : '<span class="text-muted" style="font-size: 0.75rem;">Protegida</span>'}
+                </div>
+              </div>
+            `).join('')}
+        </div>
+      </div>
+    `;
+  },
+
+  initCategoryDragAndDrop() {
+    const container = document.getElementById('categories-list');
+    if (!container) return;
+
+    const items = container.querySelectorAll('.category-item.draggable');
+    let draggedElement = null;
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        draggedElement = item;
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      item.addEventListener('dragend', (e) => {
+        item.classList.remove('dragging');
+        draggedElement = null;
+      });
+
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (draggedElement && draggedElement !== item) {
+          const rect = item.getBoundingClientRect();
+          const midpoint = rect.top + rect.height / 2;
+          if (e.clientY < midpoint) {
+            item.parentNode.insertBefore(draggedElement, item);
+          } else {
+            item.parentNode.insertBefore(draggedElement, item.nextSibling);
+          }
+        }
+      });
+
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        this.saveCategoryOrder();
+      });
+    });
+  },
+
+  saveCategoryOrder() {
+    const items = document.querySelectorAll('#categories-list .category-item.draggable');
+    const categorias = ConfigModel.getCategorias(this.currentModule);
+    const reordered = [];
+
+    items.forEach(item => {
+      const id = item.getAttribute('data-id');
+      const cat = categorias.find(c => c.id === id);
+      if (cat) reordered.push(cat);
+    });
+
+    ConfigModel.reorderCategorias(this.currentModule, reordered);
+  },
+
+  showAddCategoryModal() {
+    this.currentCategory = null;
+    document.getElementById('category-modal-title').textContent = 'Añadir Categoría';
+    document.getElementById('category-id').value = '';
+    document.getElementById('category-form').reset();
+    document.getElementById('modal-category').classList.add('show');
+  },
+
+  editCategory(categoriaId) {
+    const categorias = ConfigModel.getCategorias(this.currentModule);
+    const categoria = categorias.find(c => c.id === categoriaId);
+    
+    if (!categoria) return;
+    
+    this.currentCategory = categoria;
+    document.getElementById('category-modal-title').textContent = 'Editar Categoría';
+    document.getElementById('category-id').value = categoria.id;
+    document.getElementById('category-nombre').value = categoria.nombre;
+    document.getElementById('category-icono-preview').value = categoria.icono || '';
+    document.getElementById('category-icono').value = categoria.icono || '';
+    document.getElementById('category-ayuda').value = categoria.ayuda || '';
+    document.getElementById('modal-category').classList.add('show');
+  },
+
+  saveCategory(event) {
+    event.preventDefault();
+    
+    const categoriaId = document.getElementById('category-id').value;
+    const categoriaData = {
+      nombre: document.getElementById('category-nombre').value,
+      icono: document.getElementById('category-icono').value,
+      ayuda: document.getElementById('category-ayuda').value
+    };
+
+    try {
+      if (categoriaId) {
+        ConfigModel.updateCategoria(this.currentModule, categoriaId, categoriaData);
+      } else {
+        ConfigModel.addCategoria(this.currentModule, categoriaData);
+      }
+      
+      this.closeCategoryModal();
+      this.render();
+    } catch (error) {
+      alert(error.message);
+    }
+  },
+
+  deleteCategory(categoriaId) {
+    showConfirmModal(
+      '¿Estás seguro de eliminar esta categoría? Los elementos que usen esta categoría quedarán sin categoría asignada.',
+      () => {
+        try {
+          ConfigModel.deleteCategoria(this.currentModule, categoriaId);
+          this.render();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+    );
+  },
+
+  closeCategoryModal() {
+    document.getElementById('modal-category').classList.remove('show');
+    this.currentCategory = null;
+  },
+
+  selectCategoryIcon(icon) {
+    document.getElementById('category-icono').value = icon;
+    document.getElementById('category-icono-preview').value = icon;
+    this.closeIconPicker();
   }
 };
 

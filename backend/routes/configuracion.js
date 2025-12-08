@@ -38,7 +38,7 @@ router.get('/:modulo', async (req, res) => {
 router.put('/:modulo', async (req, res) => {
   try {
     const { modulo } = req.params;
-    const { campos, fechaModificacion } = req.body;
+    const { campos, categorias, fechaModificacion } = req.body;
     
     if (!campos || !Array.isArray(campos)) {
       return res.status(400).json({ error: 'Campos inválidos' });
@@ -53,6 +53,11 @@ router.put('/:modulo', async (req, res) => {
       usuarioId: 'user_default' // Por ahora un usuario único
     };
     
+    // Incluir categorías si están presentes (para patrimonio)
+    if (categorias && Array.isArray(categorias)) {
+      configuracion.categorias = categorias;
+    }
+    
     // Upsert: actualizar si existe, crear si no existe
     const result = await db.collection('configuraciones').updateOne(
       { modulo },
@@ -60,7 +65,7 @@ router.put('/:modulo', async (req, res) => {
       { upsert: true }
     );
     
-    console.log(`Configuración de ${modulo} guardada`);
+    console.log(`Configuración de ${modulo} guardada${categorias ? ' (con categorías)' : ''}`);
     res.json({ 
       success: true, 
       modulo,

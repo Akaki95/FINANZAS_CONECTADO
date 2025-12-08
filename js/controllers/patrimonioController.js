@@ -1,28 +1,11 @@
 // Controlador de Patrimonio - Rediseñado para ser intuitivo
 const PatrimonioController = {
-  // Categorías predefinidas
-  CATEGORIAS_ACTIVOS: [
-    { id: 'cuentas', nombre: 'Dinero en Cuentas', icono: '🏦', ayuda: 'Saldo de tus cuentas corrientes y de ahorro' },
-    { id: 'inversiones', nombre: 'Inversiones', icono: '📈', ayuda: 'Acciones, fondos, criptomonedas, bonos, etc.' },
-    { id: 'inmuebles', nombre: 'Inmuebles', icono: '🏠', ayuda: 'Casas, pisos, locales, terrenos' },
-    { id: 'vehiculos', nombre: 'Vehículos', icono: '🚗', ayuda: 'Coches, motos, bicicletas' },
-    { id: 'negocios', nombre: 'Negocios', icono: '💼', ayuda: 'Participaciones en empresas, negocios propios' },
-    { id: 'bienes', nombre: 'Bienes Físicos', icono: '📦', ayuda: 'Joyas, arte, electrodomésticos de valor' },
-    { id: 'digitales', nombre: 'Activos Digitales', icono: '💻', ayuda: 'Dominios, webs, NFTs, cuentas digitales' },
-    { id: 'pensiones', nombre: 'Planes de Pensiones', icono: '🏛️', ayuda: 'Fondos de pensiones, seguros de jubilación' },
-    { id: 'otros_activos', nombre: 'Otros Activos', icono: '💰', ayuda: 'Cualquier otro activo de valor' }
-  ],
   
-  CATEGORIAS_PASIVOS: [
-    { id: 'hipotecas', nombre: 'Hipotecas', icono: '🏠', ayuda: 'Préstamo para vivienda' },
-    { id: 'prestamos_personales', nombre: 'Préstamos Personales', icono: '💳', ayuda: 'Préstamos de consumo, personales' },
-    { id: 'coche', nombre: 'Préstamos de Coche', icono: '🚗', ayuda: 'Financiación de vehículos' },
-    { id: 'tarjetas', nombre: 'Tarjetas de Crédito', icono: '💳', ayuda: 'Deudas en tarjetas de crédito' },
-    { id: 'estudiantiles', nombre: 'Préstamos Estudiantiles', icono: '🎓', ayuda: 'Deudas de estudios, formación' },
-    { id: 'fiscales', nombre: 'Pasivos Fiscales', icono: '📋', ayuda: 'Deudas con Hacienda, impuestos pendientes' },
-    { id: 'empresariales', nombre: 'Pasivos Empresariales', icono: '💼', ayuda: 'Deudas de tu negocio, proveedores' },
-    { id: 'otros_pasivos', nombre: 'Otros Pasivos', icono: '💸', ayuda: 'Cualquier otra deuda' }
-  ],
+  // Obtener categorías desde configuración
+  getCategorias(tipo) {
+    const modulo = tipo === 'activos' ? 'patrimonio_activos' : 'patrimonio_pasivos';
+    return ConfigModel.getCategorias(modulo);
+  },
   
   render() {
     const mainContent = document.getElementById('main-content');
@@ -30,9 +13,30 @@ const PatrimonioController = {
     const pasivos = PatrimonioModel.getAllPasivos();
     const resumen = PatrimonioModel.getResumen();
     
+    console.log('[PatrimonioController] Render con:', {
+      activos: activos.length,
+      pasivos: pasivos.length,
+      activosData: activos,
+      pasivosData: pasivos
+    });
+    
+    // Obtener categorías desde configuración
+    const categoriasActivos = this.getCategorias('activos');
+    const categoriasPasivos = this.getCategorias('pasivos');
+    
+    console.log('[PatrimonioController] Categorías:', {
+      activos: categoriasActivos,
+      pasivos: categoriasPasivos
+    });
+    
     // Agrupar por categoría
-    const activosPorCategoria = this.agruparPorCategoria(activos, this.CATEGORIAS_ACTIVOS);
-    const pasivosPorCategoria = this.agruparPorCategoria(pasivos, this.CATEGORIAS_PASIVOS);
+    const activosPorCategoria = this.agruparPorCategoria(activos, categoriasActivos);
+    const pasivosPorCategoria = this.agruparPorCategoria(pasivos, categoriasPasivos);
+    
+    console.log('[PatrimonioController] Grupos:', {
+      activosPorCategoria,
+      pasivosPorCategoria
+    });
     
     mainContent.innerHTML = `
       <div class="container">
@@ -151,7 +155,8 @@ const PatrimonioController = {
     const activoCategoria = document.getElementById('activo-categoria');
     if (activoCategoria) {
       activoCategoria.addEventListener('change', (e) => {
-        const cat = this.CATEGORIAS_ACTIVOS.find(c => c.id === e.target.value);
+        const categoriasActivos = this.getCategorias('activos');
+        const cat = categoriasActivos.find(c => c.id === e.target.value);
         const ayuda = document.getElementById('activo-categoria-ayuda');
         if (ayuda && cat) ayuda.textContent = cat.ayuda;
       });
@@ -160,7 +165,8 @@ const PatrimonioController = {
     const pasivoCategoria = document.getElementById('pasivo-categoria');
     if (pasivoCategoria) {
       pasivoCategoria.addEventListener('change', (e) => {
-        const cat = this.CATEGORIAS_PASIVOS.find(c => c.id === e.target.value);
+        const categoriasPasivos = this.getCategorias('pasivos');
+        const cat = categoriasPasivos.find(c => c.id === e.target.value);
         const ayuda = document.getElementById('pasivo-categoria-ayuda');
         if (ayuda && cat) ayuda.textContent = cat.ayuda;
       });
@@ -169,10 +175,16 @@ const PatrimonioController = {
   
   agruparPorCategoria(items, categorias) {
     const grupos = {};
+    console.log('[PatrimonioController] Agrupando items:', items);
+    console.log('[PatrimonioController] Por categorías:', categorias);
+    
     categorias.forEach(cat => {
+      const itemsCategoria = items.filter(item => item.categoria === cat.id);
+      console.log(`[PatrimonioController] Categoría '${cat.id}' tiene ${itemsCategoria.length} items:`, itemsCategoria);
+      
       grupos[cat.id] = {
         categoria: cat,
-        items: items.filter(item => item.categoria === cat.id),
+        items: itemsCategoria,
         total: 0
       };
       grupos[cat.id].total = grupos[cat.id].items.reduce((sum, item) => sum + item.valor, 0);
@@ -185,7 +197,7 @@ const PatrimonioController = {
       if (grupo.items.length === 0) return '';
       
       return `
-        <div class="patrimonio-categoria">
+        <div class="patrimonio-categoria collapsed">
           <div class="patrimonio-categoria-header" onclick="PatrimonioController.toggleCategoria(this)">
             <div class="patrimonio-categoria-info">
               <span class="patrimonio-categoria-icono">${grupo.categoria.icono}</span>
@@ -202,17 +214,22 @@ const PatrimonioController = {
           </div>
           <div class="patrimonio-categoria-items">
             ${grupo.items.map(item => `
-              <div class="patrimonio-item">
+              <div class="patrimonio-item ${item.esAutomatico ? 'patrimonio-item-auto' : ''}">
                 <div class="patrimonio-item-info">
-                  <div class="patrimonio-item-nombre">${item.nombre}</div>
+                  <div class="patrimonio-item-nombre">
+                    ${item.nombre}
+                    ${item.esAutomatico ? '<span class="badge-auto">🤖 Auto</span>' : ''}
+                  </div>
                   ${item.descripcion ? `<div class="patrimonio-item-desc">${item.descripcion}</div>` : ''}
                 </div>
                 <div class="patrimonio-item-derecha">
                   <div class="patrimonio-item-valor text-success">${Calculations.formatearMoneda(item.valor)}</div>
+                  ${!item.esAutomatico ? `
                   <div class="patrimonio-item-acciones">
                     <button class="item-action-btn" onclick="PatrimonioController.editarActivo('${item.id}')" title="Editar">✏️</button>
                     <button class="item-action-btn delete" onclick="PatrimonioController.eliminarActivo('${item.id}')" title="Eliminar">🗑️</button>
                   </div>
+                  ` : '<div class="patrimonio-item-acciones"><span class="text-muted" style="font-size: 0.75rem;">Calculado</span></div>'}
                 </div>
               </div>
             `).join('')}
@@ -227,7 +244,7 @@ const PatrimonioController = {
       if (grupo.items.length === 0) return '';
       
       return `
-        <div class="patrimonio-categoria">
+        <div class="patrimonio-categoria collapsed">
           <div class="patrimonio-categoria-header" onclick="PatrimonioController.toggleCategoria(this)">
             <div class="patrimonio-categoria-info">
               <span class="patrimonio-categoria-icono">${grupo.categoria.icono}</span>
@@ -244,17 +261,22 @@ const PatrimonioController = {
           </div>
           <div class="patrimonio-categoria-items">
             ${grupo.items.map(item => `
-              <div class="patrimonio-item">
+              <div class="patrimonio-item ${item.esAutomatico ? 'patrimonio-item-auto' : ''}">
                 <div class="patrimonio-item-info">
-                  <div class="patrimonio-item-nombre">${item.nombre}</div>
+                  <div class="patrimonio-item-nombre">
+                    ${item.nombre}
+                    ${item.esAutomatico ? '<span class="badge-auto">🤖 Auto</span>' : ''}
+                  </div>
                   ${item.descripcion ? `<div class="patrimonio-item-desc">${item.descripcion}</div>` : ''}
                 </div>
                 <div class="patrimonio-item-derecha">
                   <div class="patrimonio-item-valor text-danger">${Calculations.formatearMoneda(item.valor)}</div>
+                  ${!item.esAutomatico ? `
                   <div class="patrimonio-item-acciones">
                     <button class="item-action-btn" onclick="PatrimonioController.editarPasivo('${item.id}')" title="Editar">✏️</button>
                     <button class="item-action-btn delete" onclick="PatrimonioController.eliminarPasivo('${item.id}')" title="Eliminar">🗑️</button>
                   </div>
+                  ` : '<div class="patrimonio-item-acciones"><span class="text-muted" style="font-size: 0.75rem;">Calculado</span></div>'}
                 </div>
               </div>
             `).join('')}
@@ -278,27 +300,15 @@ const PatrimonioController = {
               <input type="hidden" id="activo-id">
               <div class="form-group">
                 <label class="form-label">¿Qué tipo de activo es? *</label>
-                <select id="activo-categoria" class="form-select" required>
+                <select id="activo-categoria" class="form-select" required onchange="PatrimonioController.actualizarAyudaCategoria('activo')">
                   <option value="">Selecciona una categoría...</option>
-                  ${this.CATEGORIAS_ACTIVOS.map(cat => `
+                  ${this.getCategorias('activos').map(cat => `
                     <option value="${cat.id}">${cat.icono} ${cat.nombre}</option>
                   `).join('')}
                 </select>
                 <small class="form-help" id="activo-categoria-ayuda"></small>
               </div>
-              <div class="form-group">
-                <label class="form-label">Nombre *</label>
-                <input type="text" id="activo-nombre" class="form-input" placeholder="Ej: Cuenta del Santander" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Valor actual (€) *</label>
-                <input type="number" id="activo-valor" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
-                <small class="form-help">Introduce el valor actual que tiene este activo</small>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Notas / Descripción</label>
-                <textarea id="activo-descripcion" class="form-textarea" rows="2" placeholder="Información adicional (opcional)"></textarea>
-              </div>
+              ${FormBuilder.render('patrimonio_activos', 'activo-form')}
               <div class="form-actions">
                 <button type="button" class="btn btn-secondary" onclick="PatrimonioController.cancelarActivo()">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Guardar Activo</button>
@@ -320,27 +330,15 @@ const PatrimonioController = {
               <input type="hidden" id="pasivo-id">
               <div class="form-group">
                 <label class="form-label">¿Qué tipo de deuda es? *</label>
-                <select id="pasivo-categoria" class="form-select" required>
+                <select id="pasivo-categoria" class="form-select" required onchange="PatrimonioController.actualizarAyudaCategoria('pasivo')">
                   <option value="">Selecciona una categoría...</option>
-                  ${this.CATEGORIAS_PASIVOS.map(cat => `
+                  ${this.getCategorias('pasivos').map(cat => `
                     <option value="${cat.id}">${cat.icono} ${cat.nombre}</option>
                   `).join('')}
                 </select>
                 <small class="form-help" id="pasivo-categoria-ayuda"></small>
               </div>
-              <div class="form-group">
-                <label class="form-label">Nombre *</label>
-                <input type="text" id="pasivo-nombre" class="form-input" placeholder="Ej: Hipoteca BBVA" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Cantidad que debes (€) *</label>
-                <input type="number" id="pasivo-valor" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
-                <small class="form-help">Introduce la cantidad que aún te queda por pagar</small>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Notas / Descripción</label>
-                <textarea id="pasivo-descripcion" class="form-textarea" rows="2" placeholder="Información adicional (opcional)"></textarea>
-              </div>
+              ${FormBuilder.render('patrimonio_pasivos', 'pasivo-form')}
               <div class="form-actions">
                 <button type="button" class="btn btn-secondary" onclick="PatrimonioController.cancelarPasivo()">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Guardar Pasivo</button>
@@ -355,6 +353,23 @@ const PatrimonioController = {
   toggleCategoria(headerElement) {
     const categoria = headerElement.parentElement;
     categoria.classList.toggle('collapsed');
+  },
+  
+  actualizarAyudaCategoria(tipo) {
+    const categoriaSelect = document.getElementById(`${tipo}-categoria`);
+    const ayudaElement = document.getElementById(`${tipo}-categoria-ayuda`);
+    const categoriaId = categoriaSelect.value;
+    
+    if (!categoriaId) {
+      ayudaElement.textContent = '';
+      return;
+    }
+    
+    const categorias = tipo === 'activo' ? this.getCategorias('activos') : this.getCategorias('pasivos');
+    const cat = categorias.find(c => c.id === categoriaId);
+    if (cat) {
+      ayudaElement.textContent = cat.ayuda;
+    }
   },
   
   nuevoActivo() { 
@@ -374,9 +389,7 @@ const PatrimonioController = {
     const id = document.getElementById('activo-id').value;
     const data = {
       categoria: document.getElementById('activo-categoria').value,
-      nombre: document.getElementById('activo-nombre').value,
-      valor: parseFloat(document.getElementById('activo-valor').value),
-      descripcion: document.getElementById('activo-descripcion').value
+      ...FormBuilder.getFormData('patrimonio_activos')
     };
     try {
       id ? PatrimonioModel.updateActivo(id, data) : PatrimonioModel.createActivo(data);
@@ -394,15 +407,12 @@ const PatrimonioController = {
     document.getElementById('form-activo-title').textContent = 'Editar Activo';
     document.getElementById('activo-id').value = activo.id;
     document.getElementById('activo-categoria').value = activo.categoria || '';
-    document.getElementById('activo-nombre').value = activo.nombre;
-    document.getElementById('activo-valor').value = activo.valor;
-    document.getElementById('activo-descripcion').value = activo.descripcion || '';
+    
+    // Rellenar campos dinámicos usando FormBuilder
+    FormBuilder.populateForm('patrimonio_activos', activo);
     
     // Mostrar ayuda de categoría
-    const cat = this.CATEGORIAS_ACTIVOS.find(c => c.id === activo.categoria);
-    if (cat) {
-      document.getElementById('activo-categoria-ayuda').textContent = cat.ayuda;
-    }
+    this.actualizarAyudaCategoria('activo');
   },
   
   eliminarActivo(id) {
@@ -430,12 +440,16 @@ const PatrimonioController = {
   guardarPasivo(event) {
     event.preventDefault();
     const id = document.getElementById('pasivo-id').value;
+    const formData = FormBuilder.getFormData('patrimonio_pasivos');
+    console.log('[PatrimonioController] FormBuilder.getFormData retornó:', formData);
+    
     const data = {
       categoria: document.getElementById('pasivo-categoria').value,
-      nombre: document.getElementById('pasivo-nombre').value,
-      valor: parseFloat(document.getElementById('pasivo-valor').value),
-      descripcion: document.getElementById('pasivo-descripcion').value
+      ...formData
     };
+    
+    console.log('[PatrimonioController] Datos finales para guardar:', data);
+    
     try {
       id ? PatrimonioModel.updatePasivo(id, data) : PatrimonioModel.createPasivo(data);
       this.cancelarPasivo();
@@ -452,15 +466,12 @@ const PatrimonioController = {
     document.getElementById('form-pasivo-title').textContent = 'Editar Pasivo';
     document.getElementById('pasivo-id').value = pasivo.id;
     document.getElementById('pasivo-categoria').value = pasivo.categoria || '';
-    document.getElementById('pasivo-nombre').value = pasivo.nombre;
-    document.getElementById('pasivo-valor').value = pasivo.valor;
-    document.getElementById('pasivo-descripcion').value = pasivo.descripcion || '';
+    
+    // Rellenar campos dinámicos usando FormBuilder
+    FormBuilder.populateForm('patrimonio_pasivos', pasivo);
     
     // Mostrar ayuda de categoría
-    const cat = this.CATEGORIAS_PASIVOS.find(c => c.id === pasivo.categoria);
-    if (cat) {
-      document.getElementById('pasivo-categoria-ayuda').textContent = cat.ayuda;
-    }
+    this.actualizarAyudaCategoria('pasivo');
   },
   
   eliminarPasivo(id) {

@@ -73,11 +73,11 @@ const FormBuilder = {
                     class="form-select" 
                     ${obligatorio ? 'required' : ''}>
               <option value="">Selecciona una opción</option>
-              ${(opciones || []).map(opcion => `
-                <option value="${opcion.valor}" ${valor === opcion.valor ? 'selected' : ''}>
-                  ${opcion.etiqueta || opcion.valor}
-                </option>
-              `).join('')}
+              ${(opciones || []).map(opcion => {
+                const valorOpcion = opcion.valor || opcion;
+                const etiquetaOpcion = opcion.icono ? `${opcion.icono} ${opcion.valor}` : (opcion.etiqueta || opcion.valor || opcion);
+                return `<option value="${valorOpcion}" ${valor === valorOpcion ? 'selected' : ''}>${etiquetaOpcion}</option>`;
+              }).join('')}
             </select>
           </div>
         `;
@@ -279,6 +279,15 @@ const FormBuilder = {
         }
       }
     });
+  },
+
+  // Alias para compatibilidad
+  getFormData(modulo) {
+    return this.extractFormData(modulo);
+  },
+
+  populateForm(modulo, data) {
+    return this.fillForm(modulo, data);
   }
 };
 

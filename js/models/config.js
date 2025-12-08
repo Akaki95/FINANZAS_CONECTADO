@@ -82,6 +82,19 @@ const ConfigModel = {
         { id: 'nombre', nombre: 'Nombre', tipo: 'text', obligatorio: true, sistema: true, orden: 1 },
         { id: 'valor', nombre: 'Valor (€)', tipo: 'number', obligatorio: true, sistema: true, orden: 2, step: '0.01', min: '0.01' },
         { id: 'descripcion', nombre: 'Descripción', tipo: 'textarea', obligatorio: false, sistema: false, orden: 3, rows: 2 }
+      ],
+      categorias: [
+        { id: 'efectivo', nombre: 'Dinero Líquido', icono: '💵', ayuda: 'Dinero en efectivo, saldo disponible y ahorros', sistema: true },
+        { id: 'cuentas', nombre: 'Cuentas Bancarias', icono: '🏦', ayuda: 'Dinero en cuentas corrientes, de ahorro, depósitos bancarios', sistema: true },
+        { id: 'cuentas_cobrar', nombre: 'Cuentas por Cobrar', icono: '💶', ayuda: 'Dinero prestado a terceros pendiente de cobrar', sistema: true },
+        { id: 'inversiones', nombre: 'Inversiones', icono: '📈', ayuda: 'Acciones, bonos, fondos de inversión, ETFs' },
+        { id: 'inmuebles', nombre: 'Propiedades e Inmuebles', icono: '🏠', ayuda: 'Casas, pisos, locales, terrenos que posees' },
+        { id: 'vehiculos', nombre: 'Vehículos', icono: '🚗', ayuda: 'Coches, motos, barcos que son de tu propiedad' },
+        { id: 'negocios', nombre: 'Negocios Propios', icono: '💼', ayuda: 'Valor de empresas o negocios que posees' },
+        { id: 'bienes', nombre: 'Bienes Físicos', icono: '💎', ayuda: 'Joyas, arte, colecciones, objetos de valor' },
+        { id: 'digitales', nombre: 'Activos Digitales', icono: '₿', ayuda: 'Criptomonedas, NFTs, dominios web' },
+        { id: 'pensiones', nombre: 'Planes de Pensiones', icono: '🏛️', ayuda: 'Planes de pensiones, seguros de vida con ahorro' },
+        { id: 'otros_activos', nombre: 'Otros Activos', icono: '📦', ayuda: 'Cualquier otro activo que no encaje en las categorías anteriores' }
       ]
     },
     patrimonio_pasivos: {
@@ -89,16 +102,27 @@ const ConfigModel = {
         { id: 'nombre', nombre: 'Nombre', tipo: 'text', obligatorio: true, sistema: true, orden: 1 },
         { id: 'valor', nombre: 'Valor (€)', tipo: 'number', obligatorio: true, sistema: true, orden: 2, step: '0.01', min: '0.01' },
         { id: 'descripcion', nombre: 'Descripción', tipo: 'textarea', obligatorio: false, sistema: false, orden: 3, rows: 2 }
+      ],
+      categorias: [
+        { id: 'deudas', nombre: 'Deudas Generales', icono: '📋', ayuda: 'Deudas pendientes de pago registradas', sistema: true },
+        { id: 'hipotecas', nombre: 'Hipotecas', icono: '🏠', ayuda: 'Préstamos hipotecarios para vivienda' },
+        { id: 'prestamos_personales', nombre: 'Préstamos Personales', icono: '💰', ayuda: 'Préstamos personales, créditos al consumo' },
+        { id: 'coche', nombre: 'Préstamos de Vehículos', icono: '🚗', ayuda: 'Financiación de coches, motos' },
+        { id: 'tarjetas', nombre: 'Tarjetas de Crédito', icono: '💳', ayuda: 'Deudas en tarjetas de crédito' },
+        { id: 'estudiantiles', nombre: 'Préstamos Estudiantiles', icono: '🎓', ayuda: 'Préstamos para estudios, becas reembolsables' },
+        { id: 'fiscales', nombre: 'Deudas Fiscales', icono: '🏛️', ayuda: 'Deudas con Hacienda, impuestos pendientes' },
+        { id: 'empresariales', nombre: 'Deudas Empresariales', icono: '💼', ayuda: 'Deudas relacionadas con tu negocio' },
+        { id: 'otros_pasivos', nombre: 'Otros Pasivos', icono: '📋', ayuda: 'Cualquier otra deuda que no encaje en las categorías anteriores' }
       ]
     }
   },
 
   // Biblioteca de iconos disponibles
   ICONOS: {
-    finanzas: ['💰', '💵', '💴', '💶', '💷', '💳', '💸', '🏦', '📊', '📈', '📉', '💹'],
+    finanzas: ['💰', '💵', '💴', '💶', '💷', '💳', '💸', '🏦', '📊', '📈', '📉', '💹', '🪙', '🥇', '🥈', '🥉', '💎', '💍', '👑', '📿', '🔮', '💠'],
     comida: ['🍽️', '🍕', '🍔', '🍟', '🌮', '🌯', '🥗', '🍱', '🍜', '🍝', '🍞', '🥐', '🍰', '☕', '🍺'],
     transporte: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🛵', '🚲', '🚂', '✈️', '🚁', '⛵'],
-    vivienda: ['🏠', '🏡', '🏢', '🏬', '🏭', '🏗️', '🏘️', '🏚️', '🔑', '🚪', '🛋️', '🛏️'],
+    vivienda: ['🏠', '🏡', '🏢', '🏬', '🏭', '🏗️', '🏘️', '🏚️', '🔑', '🚪', '🛋️', '🛏️', '🕌', '🕍', '⛪'],
     trabajo: ['💼', '💻', '⌨️', '🖥️', '📱', '📞', '📠', '📊', '📈', '📉', '🖨️', '🗂️'],
     ocio: ['🎮', '🎯', '🎲', '🎰', '🎪', '🎨', '🎬', '🎭', '🎤', '🎧', '🎵', '🎸', '🎹', '🎺', '🎻'],
     salud: ['💊', '💉', '🩺', '🩹', '🩼', '⚕️', '🏥', '🚑', '😷', '🧘'],
@@ -133,10 +157,144 @@ const ConfigModel = {
       // Si aún no hay config, usar la por defecto
       if (!config) {
         this.saveLocalConfig(this.DEFAULT_CONFIG);
-        Logger.log('Usando configuración por defecto');
+        // Sincronizar configuración por defecto con MongoDB
+        await this.syncAllToAtlas();
+        Logger.log('Usando configuración por defecto y sincronizando con MongoDB');
       }
+    } else {
+      // Migrar configuración existente si faltan categorías
+      this.migrateConfig(config);
     }
     Logger.log('ConfigModel inicializado');
+  },
+  
+  // Sincronizar toda la configuración local con Atlas
+  async syncAllToAtlas() {
+    const config = this.getLocalConfig();
+    if (!config) return;
+    
+    const modulos = Object.keys(config);
+    for (const modulo of modulos) {
+      await this.syncToAtlas(modulo, config[modulo]);
+    }
+  },
+  
+  // Migrar configuración antigua agregando categorías faltantes
+  migrateConfig(config) {
+    let updated = false;
+    const modulosActualizados = [];
+    
+    // Inicializar patrimonio_activos si no existe
+    if (!config.patrimonio_activos) {
+      config.patrimonio_activos = this.DEFAULT_CONFIG.patrimonio_activos;
+      updated = true;
+      modulosActualizados.push('patrimonio_activos');
+      Logger.log('patrimonio_activos inicializado con configuración por defecto');
+    } else if (!config.patrimonio_activos.categorias) {
+      config.patrimonio_activos.categorias = this.DEFAULT_CONFIG.patrimonio_activos.categorias;
+      updated = true;
+      modulosActualizados.push('patrimonio_activos');
+      Logger.log('Categorías de activos inicializadas');
+    } else {
+      // Verificar y agregar categoría 'efectivo' en activos si no existe
+        const efectivoIndex = config.patrimonio_activos.categorias.findIndex(cat => cat.id === 'efectivo');
+        const efectivoDefault = this.DEFAULT_CONFIG.patrimonio_activos.categorias.find(cat => cat.id === 'efectivo');
+        if (efectivoIndex === -1) {
+          config.patrimonio_activos.categorias.unshift({ ...efectivoDefault });
+          updated = true;
+          modulosActualizados.push('patrimonio_activos');
+          Logger.log('Categoría "efectivo" agregada a activos');
+        } else {
+          // Actualizar SIEMPRE nombre, icono, ayuda y sistema según DEFAULT_CONFIG
+          const cat = config.patrimonio_activos.categorias[efectivoIndex];
+          cat.nombre = efectivoDefault.nombre;
+          cat.icono = efectivoDefault.icono;
+          cat.ayuda = efectivoDefault.ayuda;
+          cat.sistema = true;
+          updated = true;
+          modulosActualizados.push('patrimonio_activos');
+          Logger.log('Categoría "efectivo" forzada desde DEFAULT_CONFIG');
+        }
+      
+      // Verificar y marcar categoría 'cuentas' como sistema
+        const cuentasIndex = config.patrimonio_activos.categorias.findIndex(cat => cat.id === 'cuentas');
+        const cuentasDefault = this.DEFAULT_CONFIG.patrimonio_activos.categorias.find(cat => cat.id === 'cuentas');
+        if (cuentasIndex !== -1) {
+          const cat = config.patrimonio_activos.categorias[cuentasIndex];
+          cat.nombre = cuentasDefault.nombre;
+          cat.icono = cuentasDefault.icono;
+          cat.ayuda = cuentasDefault.ayuda;
+          cat.sistema = true;
+          updated = true;
+          modulosActualizados.push('patrimonio_activos');
+          Logger.log('Categoría "cuentas" forzada desde DEFAULT_CONFIG');
+        }
+      
+      // Verificar y agregar categoría 'cuentas_cobrar' en activos si no existe
+        const cuentasCobrarIndex = config.patrimonio_activos.categorias.findIndex(cat => cat.id === 'cuentas_cobrar');
+        const cuentasCobrarDefault = this.DEFAULT_CONFIG.patrimonio_activos.categorias.find(cat => cat.id === 'cuentas_cobrar');
+        if (cuentasCobrarIndex === -1) {
+          const insertIndex = config.patrimonio_activos.categorias.findIndex(cat => cat.id === 'cuentas');
+          if (insertIndex !== -1) {
+            config.patrimonio_activos.categorias.splice(insertIndex + 1, 0, { ...cuentasCobrarDefault });
+          } else {
+            config.patrimonio_activos.categorias.unshift({ ...cuentasCobrarDefault });
+          }
+          updated = true;
+          modulosActualizados.push('patrimonio_activos');
+          Logger.log('Categoría "cuentas_cobrar" agregada a activos');
+        } else {
+          // Actualizar SIEMPRE nombre, icono, ayuda y sistema según DEFAULT_CONFIG
+          const cat = config.patrimonio_activos.categorias[cuentasCobrarIndex];
+          cat.nombre = cuentasCobrarDefault.nombre;
+          cat.icono = cuentasCobrarDefault.icono;
+          cat.ayuda = cuentasCobrarDefault.ayuda;
+          cat.sistema = true;
+          updated = true;
+          modulosActualizados.push('patrimonio_activos');
+          Logger.log('Categoría "cuentas_cobrar" forzada desde DEFAULT_CONFIG');
+        }
+    }
+    
+    // Inicializar patrimonio_pasivos si no existe
+    if (!config.patrimonio_pasivos) {
+      config.patrimonio_pasivos = this.DEFAULT_CONFIG.patrimonio_pasivos;
+      updated = true;
+      modulosActualizados.push('patrimonio_pasivos');
+      Logger.log('patrimonio_pasivos inicializado con configuración por defecto');
+    } else if (!config.patrimonio_pasivos.categorias) {
+      config.patrimonio_pasivos.categorias = this.DEFAULT_CONFIG.patrimonio_pasivos.categorias;
+      updated = true;
+      modulosActualizados.push('patrimonio_pasivos');
+      Logger.log('Categorías de pasivos inicializadas');
+    } else {
+      // Verificar y agregar categoría 'deudas' en pasivos si no existe
+      const deudasIndex = config.patrimonio_pasivos.categorias.findIndex(cat => cat.id === 'deudas');
+      if (deudasIndex === -1) {
+        config.patrimonio_pasivos.categorias.unshift(
+          { id: 'deudas', nombre: 'Deudas Generales', icono: '📋', ayuda: 'Deudas pendientes de pago registradas', sistema: true }
+        );
+        updated = true;
+        modulosActualizados.push('patrimonio_pasivos');
+        Logger.log('Categoría "deudas" agregada a pasivos');
+      } else if (!config.patrimonio_pasivos.categorias[deudasIndex].sistema) {
+        // Actualizar categoría existente para marcarla como sistema
+        config.patrimonio_pasivos.categorias[deudasIndex].sistema = true;
+        updated = true;
+        modulosActualizados.push('patrimonio_pasivos');
+        Logger.log('Categoría "deudas" marcada como sistema');
+      }
+    }
+    
+    if (updated) {
+      this.saveLocalConfig(config);
+      Logger.success('Configuración migrada con nuevas categorías');
+      
+      // Sincronizar módulos actualizados con MongoDB
+      modulosActualizados.forEach(modulo => {
+        this.syncToAtlas(modulo, config[modulo]);
+      });
+    }
   },
 
   // Obtener configuración local completa
@@ -179,16 +337,23 @@ const ConfigModel = {
   // Sincronizar configuración con Atlas
   async syncToAtlas(modulo, moduleConfig) {
     try {
+      const payload = {
+        modulo: modulo,
+        campos: moduleConfig.campos,
+        fechaModificacion: new Date().toISOString()
+      };
+      
+      // Incluir categorías si el módulo las tiene
+      if (moduleConfig.categorias) {
+        payload.categorias = moduleConfig.categorias;
+      }
+      
       const response = await fetch(`${this.API_BASE}/configuracion/${modulo}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          modulo: modulo,
-          campos: moduleConfig.campos,
-          fechaModificacion: new Date().toISOString()
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -220,6 +385,12 @@ const ConfigModel = {
         // Cargar un módulo específico
         const config = this.getLocalConfig() || this.DEFAULT_CONFIG;
         config[modulo] = { campos: data.campos };
+        
+        // Incluir categorías si existen (para patrimonio)
+        if (data.categorias) {
+          config[modulo].categorias = data.categorias;
+        }
+        
         this.saveLocalConfig(config);
         Logger.success(`Configuración de ${modulo} cargada desde Atlas`);
       } else {
@@ -227,6 +398,11 @@ const ConfigModel = {
         const config = {};
         data.forEach(item => {
           config[item.modulo] = { campos: item.campos };
+          
+          // Incluir categorías si existen (para patrimonio)
+          if (item.categorias) {
+            config[item.modulo].categorias = item.categorias;
+          }
         });
         this.saveLocalConfig(config);
         Logger.success('Configuraciones cargadas desde Atlas');
@@ -331,8 +507,72 @@ const ConfigModel = {
     this.saveModuleConfig(modulo, config);
   },
 
+  // === GESTIÓN DE CATEGORÍAS (PATRIMONIO) ===
+  
+  // Obtener categorías de un módulo
+  getCategorias(modulo) {
+    const config = this.getModuleConfig(modulo);
+    return config.categorias || [];
+  },
+
+  // Añadir categoría
+  addCategoria(modulo, categoria) {
+    const config = this.getModuleConfig(modulo);
+    
+    if (!config.categorias) {
+      config.categorias = [];
+    }
+    
+    // Generar ID único para la categoría
+    categoria.id = categoria.id || `cat_${Date.now()}`;
+    
+    config.categorias.push(categoria);
+    this.saveModuleConfig(modulo, config);
+    
+    return categoria;
+  },
+
+  // Actualizar categoría
+  updateCategoria(modulo, categoriaId, categoriaData) {
+    const config = this.getModuleConfig(modulo);
+    const index = config.categorias.findIndex(c => c.id === categoriaId);
+    
+    if (index !== -1) {
+      config.categorias[index] = { ...config.categorias[index], ...categoriaData };
+      this.saveModuleConfig(modulo, config);
+      return config.categorias[index];
+    }
+    
+    throw new Error('Categoría no encontrada');
+  },
+
+  // Eliminar categoría
+  deleteCategoria(modulo, categoriaId) {
+    const config = this.getModuleConfig(modulo);
+    
+    if (!config.categorias) {
+      throw new Error('No hay categorías configuradas');
+    }
+    
+    const categoria = config.categorias.find(c => c.id === categoriaId);
+    
+    if (categoria && categoria.sistema) {
+      throw new Error('No se puede eliminar una categoría del sistema');
+    }
+    
+    config.categorias = config.categorias.filter(c => c.id !== categoriaId);
+    this.saveModuleConfig(modulo, config);
+  },
+
+  // Reordenar categorías
+  reorderCategorias(modulo, categoriasOrdenadas) {
+    const config = this.getModuleConfig(modulo);
+    config.categorias = categoriasOrdenadas;
+    this.saveModuleConfig(modulo, config);
+  },
+
   // Restablecer configuración por defecto
-  resetToDefault(modulo = null) {
+  resetModuleConfig(modulo) {
     if (modulo) {
       this.saveModuleConfig(modulo, this.DEFAULT_CONFIG[modulo]);
     } else {
