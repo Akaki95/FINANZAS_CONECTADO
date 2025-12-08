@@ -21,9 +21,9 @@ const DashboardView = {
     // Ingresos vs Gastos: últimos 3 meses
     const comparacionInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 2, 1);
     const comparacionFin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-    // Patrimonio: desde 1 de enero hasta 31 de diciembre del año actual
-    const patrimonioInicio = new Date(anioActual, 0, 1);
-    const patrimonioFin = new Date(anioActual, 11, 31);
+    // Gastos por Categoría: primer día del mes actual hasta hoy
+    const patrimonioInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const patrimonioFin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
     // Formato YYYY-MM-DD local para inputs
     const formatoFechaLocal = (fecha) => {
       const year = fecha.getFullYear();
@@ -180,7 +180,7 @@ const DashboardView = {
           
           <div class="chart-card">
             <div class="chart-header">
-              <h3 class="chart-title">Patrimonio</h3>
+              <h3 class="chart-title">Gastos por Categoría (%)</h3>
               <div class="chart-date-filter">
                 <input type="date" id="patrimonio-inicio" class="date-input" 
                        value="${this.filtros.patrimonio.inicio}"
@@ -440,26 +440,40 @@ const DashboardView = {
     if (!ctx) return;
     
     const filtro = this.filtros.patrimonio;
-    let activos = PatrimonioModel.getAllActivos();
-    let pasivos = PatrimonioModel.getAllPasivos();
+    let gastos = GastoModel.getAll();
     
-    // Aplicar filtro de fechas si existe fechaAdquisicion
+    // Aplicar filtro de fechas
     if (filtro.inicio && filtro.fin) {
-      activos = activos.filter(a => {
-        if (!a.fechaAdquisicion) return true;
-        const fecha = new Date(a.fechaAdquisicion);
-        return fecha >= new Date(filtro.inicio) && fecha <= new Date(filtro.fin);
-      });
-      pasivos = pasivos.filter(p => {
-        if (!p.fechaAdquisicion) return true;
-        const fecha = new Date(p.fechaAdquisicion);
-        return fecha >= new Date(filtro.inicio) && fecha <= new Date(filtro.fin);
-      });
+      gastos = Calculations.filtrarPorRango(gastos, filtro.inicio, filtro.fin);
     }
     
-    const totalActivos = Calculations.sumarMontos(activos);
-    const totalPasivos = Calculations.sumarMontos(pasivos);
-    const patrimonioNeto = totalActivos - totalPasivos;
+    // Calcular gastos por categoría
+    const gastosPorCategoria = {};
+    let totalGastos = 0;
+    
+    gastos.forEach(gasto => {
+      const categoria = gasto.categoria || 'Sin categoría';
+      if (!gastosPorCategoria[categoria]) {
+        gastosPorCategoria[categoria] = 0;
+      }
+      gastosPorCategoria[categoria] += gasto.monto;
+      totalGastos += gasto.monto;
+    });
+    
+    // Convertir a arrays y calcular porcentajes
+    const categorias = Object.keys(gastosPorCategoria).sort((a, b) => 
+      gastosPorCategoria[b] - gastosPorCategoria[a]
+    );
+    const montos = categorias.map(cat => gastosPorCategoria[cat]);
+    const porcentajes = categorias.map(cat => 
+      totalGastos > 0 ? ((gastosPorCategoria[cat] / totalGastos) * 100).toFixed(1) : 0
+    );
+    
+    // Colores para las categorías
+    const colores = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ];
     
     if (this.charts.patrimonio) {
       this.charts.patrimonio.destroy();
@@ -468,22 +482,14 @@ const DashboardView = {
     this.charts.patrimonio = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Patrimonio'],
+        labels: categorias,
         datasets: [
           {
-            label: 'Activos',
-            data: [totalActivos],
-            backgroundColor: '#4CAF50'
-          },
-          {
-            label: 'Pasivos',
-            data: [totalPasivos],
-            backgroundColor: '#f44336'
-          },
-          {
-            label: 'Neto',
-            data: [patrimonioNeto],
-            backgroundColor: '#2196F3'
+            label: 'Porcentaje del Total (%)',
+            data: porcentajes,
+            backgroundColor: colores.slice(0, categorias.length),
+            borderColor: colores.slice(0, categorias.length).map(c => c.replace(')', ', 0.8)').replace('rgb', 'rgba')),
+            borderWidth: 1
           }
         ]
       },
@@ -492,12 +498,41 @@ const DashboardView = {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: true
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const categoria = context.label;
+                const porcentaje = context.parsed.y;
+                const monto = montos[context.dataIndex];
+                return [
+                  `${categoria}: ${porcentaje}%`,
+                  `Monto: ${Calculations.formatearMoneda(monto)}`
+                ];
+              }
+            }
           }
         },
         scales: {
           y: {
-            beginAtZero: true
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            title: {
+              display: true,
+              text: 'Porcentaje del Total (%)'
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
           }
         }
       }
