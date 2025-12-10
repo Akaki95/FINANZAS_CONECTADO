@@ -1,7 +1,9 @@
 // Modelo de Configuración - Gestiona la configuración de formularios
 const ConfigModel = {
   STORAGE_KEY: 'finanzas_config',
-  API_BASE: 'https://finanzas-conectado.onrender.com/api',
+  API_BASE: (window.location.hostname === 'localhost')
+    ? 'http://localhost:3000/api'
+    : 'https://finanzas-conectado.onrender.com/api',
 
   // Configuración por defecto para cada módulo
   DEFAULT_CONFIG: {

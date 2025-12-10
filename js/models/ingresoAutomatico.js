@@ -1,7 +1,9 @@
 // Modelo de Ingreso Automático (Recurrente)
 const IngresoAutomaticoModel = {
   collectionName: 'ingresos_automaticos',
-  API_BASE: 'https://finanzas-conectado.onrender.com',
+  API_BASE: (window.location.hostname === 'localhost')
+    ? 'http://localhost:3000'
+    : 'https://finanzas-conectado.onrender.com',
   
   // Obtener todas las reglas desde MongoDB Atlas
   async getAll() {
