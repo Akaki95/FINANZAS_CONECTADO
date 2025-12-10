@@ -1,6 +1,6 @@
 // Sync Service - Gestión de sincronización con backend Node.js
 const SyncService = {
-  apiBaseUrl: 'http://localhost:3000/api',
+  apiBaseUrl: 'https://finanzas-conectado.onrender.com/api',
   isOnline: navigator.onLine,
   syncQueue: [],
   syncInterval: null,

@@ -1,7 +1,7 @@
 // Modelo de Gasto Automático (Recurrente)
 const GastoAutomaticoModel = {
   collectionName: 'gastos_automaticos',
-  API_BASE: 'http://localhost:3000',
+  API_BASE: 'https://finanzas-conectado.onrender.com',
   
   // Obtener todas las reglas desde MongoDB Atlas
   async getAll() {
