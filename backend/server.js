@@ -13,6 +13,8 @@ app.use(express.json()); // Parsear JSON en el body
 // Importar rutas
 const gastosRoutes = require('./routes/gastos');
 const ingresosRoutes = require('./routes/ingresos');
+const gastosAutomaticosRoutes = require('./routes/gastos_automaticos');
+const ingresosAutomaticosRoutes = require('./routes/ingresos_automaticos');
 const deudasRoutes = require('./routes/deudas');
 const prestamosRoutes = require('./routes/prestamos');
 const patrimonioRoutes = require('./routes/patrimonio');
@@ -25,6 +27,8 @@ const configuracionCuentasRoutes = require('./routes/configuracion_cuentas');
 // Usar rutas
 app.use('/api/gastos', gastosRoutes);
 app.use('/api/ingresos', ingresosRoutes);
+app.use('/api/gastos_automaticos', gastosAutomaticosRoutes);
+app.use('/api/ingresos_automaticos', ingresosAutomaticosRoutes);
 app.use('/api/deudas', deudasRoutes);
 app.use('/api/prestamos', prestamosRoutes);
 app.use('/api/patrimonio', patrimonioRoutes);

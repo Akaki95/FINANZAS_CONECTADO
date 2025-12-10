@@ -11,9 +11,14 @@ const GastosController = {
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">Gestión de Gastos</h2>
-          <button class="btn btn-primary" onclick="GastosController.mostrarFormulario()">
-            ➕ Nuevo Gasto
-          </button>
+          <div class="section-header-actions">
+            <button class="btn btn-secondary" onclick="GastosController.gestionarAutomaticos()">
+              ⚙️ Gastos Automáticos
+            </button>
+            <button class="btn btn-primary" onclick="GastosController.mostrarFormulario()">
+              ➕ Nuevo Gasto
+            </button>
+          </div>
         </div>
         
         <!-- Modal de formulario -->
@@ -167,6 +172,293 @@ const GastosController = {
     modal.classList.add('show');
     
     setTimeout(() => modal.classList.remove('show'), 3000);
+  },
+  
+  // === GESTIÓN DE GASTOS AUTOMÁTICOS ===
+  
+  async gestionarAutomaticos() {
+    const reglas = await GastoAutomaticoModel.getAll();
+    const config = ConfigModel.getLocalConfig();
+    const categorias = config.gastos.campos.find(c => c.id === 'categoria').opciones;
+    
+    const modal = document.createElement('div');
+    modal.id = 'modal-automaticos';
+    modal.className = 'modal-overlay show';
+    modal.innerHTML = `
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h3 class="modal-title">⚙️ Gastos Automáticos</h3>
+          <button class="modal-close" onclick="GastosController.cerrarAutomaticos()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="info-banner" style="margin-bottom: var(--spacing-lg);">
+            <div class="info-banner-icon">💡</div>
+            <div class="info-banner-text">
+              Los gastos automáticos se generan automáticamente según la frecuencia que definas.
+              Por ejemplo: alquiler mensual, suscripciones, etc.
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick="GastosController.nuevaReglaAutomatica()" style="margin-bottom: var(--spacing-md);">
+            ➕ Nueva Regla Automática
+          </button>
+          
+          ${reglas.length === 0 ? `
+            <div class="empty-state">
+              <div class="empty-state-icon">⚙️</div>
+              <div class="empty-state-title">No hay reglas automáticas</div>
+              <div class="empty-state-text">Crea tu primera regla para automatizar gastos recurrentes</div>
+            </div>
+          ` : `
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Monto</th>
+                    <th>Categoría</th>
+                    <th>Frecuencia</th>
+                    <th>Próxima</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reglas.map(regla => `
+                    <tr class="${!regla.activo ? 'regla-inactiva' : ''}">
+                      <td><strong>${regla.nombre}</strong></td>
+                      <td class="text-danger">${Calculations.formatearMoneda(regla.monto)}</td>
+                      <td><span class="category-chip">${regla.categoria}</span></td>
+                      <td>${this.getFrecuenciaTexto(regla.frecuencia)}</td>
+                      <td>${regla.activo ? GastoAutomaticoModel.getProximaAplicacion(regla) : '-'}</td>
+                      <td>
+                          <span class="badge badge-auto">
+                            ${regla.activo ? '🤖 Automático' : '⏸ Pausada'}
+                          </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-small btn-secondary" onclick="GastosController.editarReglaAutomatica('${regla.id}')">✏️</button>
+                        <button class="btn btn-small ${regla.activo ? 'btn-warning' : 'btn-success'}" 
+                                onclick="GastosController.toggleReglaAutomatica('${regla.id}')">
+                          ${regla.activo ? '⏸' : '▶'}
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="GastosController.eliminarReglaAutomatica('${regla.id}')">🗑️</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  },
+  
+  cerrarAutomaticos() {
+    const modal = document.getElementById('modal-automaticos');
+    if (modal) modal.remove();
+  },
+  
+  nuevaReglaAutomatica() {
+    const config = ConfigModel.getLocalConfig();
+    const categorias = config.gastos.campos.find(c => c.id === 'categoria').opciones;
+    const modal = document.createElement('div');
+    modal.id = 'modal-regla';
+    modal.className = 'modal-overlay show';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Nueva Regla Automática</h3>
+          <button class="modal-close" onclick="GastosController.cerrarFormularioRegla()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="form-regla-automatica" onsubmit="GastosController.guardarReglaAutomatica(event)">
+            <input type="hidden" id="regla-id">
+            
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input type="text" id="regla-nombre" class="form-input" required placeholder="Ej: Alquiler mensual">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Monto (€) *</label>
+              <input type="number" id="regla-monto" class="form-input" step="0.01" min="0.01" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Categoría *</label>
+              <select id="regla-categoria" class="form-select" required>
+                ${categorias.map(c => `<option value="${c.valor}">${c.etiqueta}</option>`).join('')}
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Frecuencia *</label>
+              <select id="regla-frecuencia" class="form-select" required onchange="GastosController.cambiarFrecuencia()">
+                <option value="diaria">Diaria</option>
+                <option value="semanal">Semanal</option>
+                <option value="mensual" selected>Mensual</option>
+                <option value="anual">Anual</option>
+              </select>
+            </div>
+            
+            <div class="form-group" id="grupo-dia-aplicacion">
+              <label class="form-label" id="label-dia-aplicacion">Día del mes (1-31) *</label>
+              <input type="number" id="regla-dia" class="form-input" min="1" max="31" value="1" required>
+              <small class="form-help" id="help-dia-aplicacion">Día del mes en que se aplicará el gasto</small>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Fecha inicio *</label>
+              <input type="date" id="regla-fecha-inicio" class="form-input" required value="${new Date().toISOString().split('T')[0]}">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Fecha fin (opcional)</label>
+              <input type="date" id="regla-fecha-fin" class="form-input">
+              <small class="form-help">Deja en blanco para que no expire</small>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Descripción</label>
+              <textarea id="regla-descripcion" class="form-input" rows="2"></textarea>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="GastosController.cerrarFormularioRegla()">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Regla</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  },
+  
+  cambiarFrecuencia() {
+    const frecuencia = document.getElementById('regla-frecuencia').value;
+    const label = document.getElementById('label-dia-aplicacion');
+    const input = document.getElementById('regla-dia');
+    const help = document.getElementById('help-dia-aplicacion');
+    
+    switch(frecuencia) {
+      case 'diaria':
+        document.getElementById('grupo-dia-aplicacion').style.display = 'none';
+        break;
+      case 'semanal':
+        document.getElementById('grupo-dia-aplicacion').style.display = 'block';
+        label.textContent = 'Día de la semana *';
+        input.min = 0;
+        input.max = 6;
+        input.value = 1;
+        help.textContent = '0=Domingo, 1=Lunes, 2=Martes... 6=Sábado';
+        break;
+      case 'mensual':
+        document.getElementById('grupo-dia-aplicacion').style.display = 'block';
+        label.textContent = 'Día del mes (1-31) *';
+        input.min = 1;
+        input.max = 31;
+        input.value = 1;
+        help.textContent = 'Día del mes en que se aplicará el gasto';
+        break;
+      case 'anual':
+        document.getElementById('grupo-dia-aplicacion').style.display = 'block';
+        label.textContent = 'Fecha (MMDD) *';
+        input.min = 101;
+        input.max = 1231;
+        input.value = 101;
+        help.textContent = 'Formato: MMDD. Ej: 1225 para 25 de diciembre';
+        break;
+    }
+  },
+  
+  async guardarReglaAutomatica(event) {
+    event.preventDefault();
+    
+    const id = document.getElementById('regla-id').value;
+    const data = {
+      nombre: document.getElementById('regla-nombre').value,
+      monto: parseFloat(document.getElementById('regla-monto').value),
+      categoria: document.getElementById('regla-categoria').value,
+      frecuencia: document.getElementById('regla-frecuencia').value,
+      diaAplicacion: parseInt(document.getElementById('regla-dia').value) || 1,
+      fechaInicio: document.getElementById('regla-fecha-inicio').value,
+      fechaFin: document.getElementById('regla-fecha-fin').value || null,
+      descripcion: document.getElementById('regla-descripcion').value
+    };
+    
+    try {
+      if (id) {
+        await GastoAutomaticoModel.update(id, data);
+      } else {
+        await GastoAutomaticoModel.create(data);
+      }
+      this.cerrarFormularioRegla();
+      this.cerrarAutomaticos();
+      await this.gestionarAutomaticos();
+    } catch (error) {
+      alert(error.message);
+    }
+  },
+  
+  async editarReglaAutomatica(id) {
+    const regla = await GastoAutomaticoModel.getById(id);
+    if (!regla) return;
+    
+    this.nuevaReglaAutomatica();
+    
+    setTimeout(() => {
+      document.getElementById('regla-id').value = regla.id;
+      document.getElementById('regla-nombre').value = regla.nombre;
+      document.getElementById('regla-monto').value = regla.monto;
+      document.getElementById('regla-categoria').value = regla.categoria;
+      document.getElementById('regla-frecuencia').value = regla.frecuencia;
+      document.getElementById('regla-dia').value = regla.diaAplicacion;
+      document.getElementById('regla-fecha-inicio').value = regla.fechaInicio;
+      document.getElementById('regla-fecha-fin').value = regla.fechaFin || '';
+      document.getElementById('regla-descripcion').value = regla.descripcion || '';
+      document.querySelector('#modal-regla .modal-title').textContent = 'Editar Regla Automática';
+      this.cambiarFrecuencia();
+    }, 100);
+  },
+  
+  async toggleReglaAutomatica(id) {
+    const regla = await GastoAutomaticoModel.getById(id);
+    if (!regla) return;
+    
+    await GastoAutomaticoModel.update(id, { ...regla, activo: !regla.activo });
+    this.cerrarAutomaticos();
+    await this.gestionarAutomaticos();
+  },
+  
+  eliminarReglaAutomatica(id) {
+    showConfirmModal(
+      '¿Estás seguro de eliminar esta regla automática? No afectará a los gastos ya generados.',
+      async () => {
+        await GastoAutomaticoModel.delete(id);
+        this.cerrarAutomaticos();
+        await this.gestionarAutomaticos();
+      }
+    );
+  },
+  
+  cerrarFormularioRegla() {
+    const modal = document.getElementById('modal-regla');
+    if (modal) modal.remove();
+  },
+  
+  getFrecuenciaTexto(frecuencia) {
+    const textos = {
+      diaria: '📅 Diaria',
+      semanal: '📆 Semanal',
+      mensual: '🗓️ Mensual',
+      anual: '📅 Anual'
+    };
+    return textos[frecuencia] || frecuencia;
   }
 };
 

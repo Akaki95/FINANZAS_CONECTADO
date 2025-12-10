@@ -536,6 +536,7 @@ body {
 .text-success { color: var(--success-color); }
 .text-danger { color: var(--danger-color); }
 .text-warning { color: var(--warning-color); }
+.text-muted { color: var(--text-secondary); }
 .mt-1 { margin-top: var(--spacing-sm); }
 .mt-2 { margin-top: var(--spacing-md); }
 .mt-3 { margin-top: var(--spacing-lg); }
@@ -547,3 +548,53 @@ body {
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .flex-center { display: flex; justify-content: center; align-items: center; }
 .flex-gap { gap: var(--spacing-md); }
+
+/* Section Header Actions */
+.section-header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* Modal Large */
+.modal-large {
+  max-width: 900px;
+  width: 90vw;
+}
+
+/* Regla inactiva */
+.regla-inactiva {
+  opacity: 0.6;
+  background-color: var(--bg-secondary);
+}
+
+/* Badge styles */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.badge-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+

@@ -30,6 +30,8 @@ const IngresoModel = {
       monto: ValidationService.formatearMonto(ingresoData.monto),
       descripcion: ValidationService.sanitizarTexto(ingresoData.descripcion || ''),
       tipo: ValidationService.sanitizarTexto(ingresoData.tipo),
+      esAutomatico: ingresoData.esAutomatico || false,
+      reglaId: ingresoData.reglaId || null,
       createdAt: new Date().toISOString()
     };
     

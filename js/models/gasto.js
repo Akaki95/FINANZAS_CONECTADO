@@ -30,6 +30,8 @@ const GastoModel = {
       monto: ValidationService.formatearMonto(gastoData.monto),
       descripcion: ValidationService.sanitizarTexto(gastoData.descripcion || ''),
       categoria: ValidationService.sanitizarTexto(gastoData.categoria),
+      esAutomatico: gastoData.esAutomatico || false,
+      reglaId: gastoData.reglaId || null,
       createdAt: new Date().toISOString()
     };
     

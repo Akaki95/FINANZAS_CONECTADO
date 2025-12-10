@@ -20,6 +20,12 @@
     // Inicializar modelos
     AuditoriaModel.init();
     
+    // Aplicar reglas automáticas al iniciar
+    aplicarReglasAutomaticas();
+    
+    // Programar aplicación de reglas automáticas cada hora
+    setInterval(aplicarReglasAutomaticas, 3600000); // 1 hora
+    
     // Registrar rutas
     Router.register('dashboard', () => {
       DashboardView.render();
@@ -397,6 +403,27 @@
     }
   }
   
+  // Aplicar reglas automáticas de gastos e ingresos
+  function aplicarReglasAutomaticas() {
+    try {
+      if (typeof GastoAutomaticoModel !== 'undefined') {
+        const gastosGenerados = GastoAutomaticoModel.aplicarReglas();
+        if (gastosGenerados > 0) {
+          Logger.success(`${gastosGenerados} gasto(s) automático(s) generado(s)`);
+        }
+      }
+      
+      if (typeof IngresoAutomaticoModel !== 'undefined') {
+        const ingresosGenerados = IngresoAutomaticoModel.aplicarReglas();
+        if (ingresosGenerados > 0) {
+          Logger.success(`${ingresosGenerados} ingreso(s) automático(s) generado(s)`);
+        }
+      }
+    } catch (error) {
+      Logger.error('Error aplicando reglas automáticas', error);
+    }
+  }
+  
   // Iniciar cuando el DOM esté listo
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -405,3 +432,4 @@
   }
   
 })();
+
