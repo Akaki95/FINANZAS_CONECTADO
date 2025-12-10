@@ -54,7 +54,7 @@ body {
 
 .header .container {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   gap: var(--spacing-md);
   max-width: 70%;
@@ -75,6 +75,8 @@ body {
   cursor: pointer;
   padding: var(--spacing-sm);
   color: var(--text-primary);
+  order: 1;
+  margin-right: var(--spacing-md);
 }
 
 .nav {
@@ -114,6 +116,8 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  order: 3;
+  margin-left: auto;
 }
 
 .config-btn:hover {
@@ -136,6 +140,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  order: 4;
 }
 
 .sync-btn:hover {
@@ -199,14 +204,12 @@ body {
   .logo {
     margin-right: 12px;
     flex-shrink: 0;
-    order: 0;
+    order: 2;
   }
   .menu-toggle {
     display: block;
     order: 1;
-    margin-right: 8px;
-    margin-left: 0;
-    align-self: center;
+    margin-right: var(--spacing-md);
   }
   .nav {
     position: absolute;
@@ -276,6 +279,27 @@ body {
     padding: 20px;
   }
 
+  .nav {
+    display: none;
+    position: absolute;
+    top: 48px;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex-direction: column;
+    z-index: 100;
+    transition: max-height 0.3s ease;
+    max-height: 0;
+    overflow: hidden;
+  }
+  .nav.show {
+    display: flex;
+    max-height: 400px;
+    overflow: visible;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
   .nav-btn {
     align-items: center;
     text-align: center;
@@ -284,9 +308,38 @@ body {
     width: 100%;
   }
 
+  .header {
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+  }
+
   .header .container {
+    height: 48px;
+    min-height: 48px;
+    padding: 0 8px;
     max-width: 100%;
-    padding: 0 var(--spacing-sm);
+    flex-direction: row;
+    gap: var(--spacing-md);
+  }
+
+  .menu-toggle {
+    display: block;
+    order: 1;
+    margin-right: var(--spacing-md);
+  }
+
+  .logo {
+    order: 2;
+  }
+
+  .config-btn {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .sync-btn {
+    order: 4;
   }
 
   .sync-status {
@@ -302,6 +355,127 @@ body {
     width: 36px;
     height: 36px;
     font-size: 1rem;
+  }
+
+  /* Botones de acción (Nuevo gasto, Nuevo ingreso, etc.) optimizados para móvil */
+  .btn {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    min-height: 42px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-small {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    min-height: 38px;
+  }
+
+  /* Botones en grupos o acciones múltiples */
+  .section-header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .section-header-actions .btn {
+    width: 100%;
+  }
+
+  /* Cards más compactos para móvil */
+  .card {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* Main content con menos padding */
+  .main-content {
+    padding: var(--spacing-md) 0;
+  }
+
+  /* Tablas responsivas */
+  .table th,
+  .table td {
+    padding: 8px 6px;
+    font-size: 0.85rem;
+  }
+
+  .table th {
+    font-size: 0.8rem;
+  }
+
+  /* Modales adaptados */
+  .modal-content {
+    width: 95%;
+    padding: var(--spacing-md);
+    max-height: 85vh;
+  }
+
+  /* Alerts más compactos */
+  .alert {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+  }
+
+  /* Items expandibles para móvil */
+  .mobile-expandable {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .mobile-expandable:active {
+    background-color: var(--bg-secondary);
+  }
+
+  .mobile-expandable-content {
+    display: none;
+    padding-top: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    border-top: 1px solid var(--border-color);
+    animation: slideDown 0.2s ease;
+  }
+
+  .mobile-expandable.expanded .mobile-expandable-content {
+    display: block;
+  }
+
+  .mobile-expandable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .mobile-expand-icon {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+  }
+
+  .mobile-expandable.expanded .mobile-expand-icon {
+    transform: rotate(180deg);
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      max-height: 500px;
+    }
   }
 }
 
@@ -571,13 +745,47 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .header .container {
-    flex-direction: column;
+    flex-direction: row;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 8px;
+    max-width: 100%;
     gap: var(--spacing-md);
   }
-  
+  .menu-toggle {
+    display: block;
+    order: 1;
+    margin-right: var(--spacing-md);
+  }
+  .logo {
+    order: 2;
+  }
+  .config-btn {
+    order: 3;
+    margin-left: auto;
+  }
+  .sync-btn {
+    order: 4;
+  }
   .nav {
-    justify-content: center;
+    display: none;
+    position: absolute;
+    top: 48px;
+    left: 0;
     width: 100%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex-direction: column;
+    z-index: 100;
+    transition: max-height 0.3s ease;
+    max-height: 0;
+    overflow: hidden;
+  }
+  .nav.show {
+    display: flex;
+    max-height: 400px;
+    overflow: visible;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
   
   .nav-btn {
@@ -740,5 +948,29 @@ body {
 .badge-danger {
   background-color: #f8d7da;
   color: #721c24;
+}
+
+@media (max-width: 768px) {
+  /* Elimina la regla de columna para section-header-actions */
+  .section-header-actions {
+    display: flex;
+    flex-direction: row !important;
+    gap: 12px;
+    width: auto;
+  }
+  .section-header-actions .btn {
+    width: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header-actions {
+    flex-direction: column !important;
+    gap: 12px;
+    width: 100%;
+  }
+  .section-header-actions .btn {
+    width: 100% !important;
+  }
 }
 

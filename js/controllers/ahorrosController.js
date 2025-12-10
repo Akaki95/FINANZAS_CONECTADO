@@ -74,6 +74,9 @@ const AhorrosController = {
                 </tbody>
               </table>
             </div>
+            <div class="mobile-list">
+              ${this.renderMovimientosMobile(ahorros)}
+            </div>
           `}
         </div>
       </div>
@@ -112,6 +115,50 @@ const AhorrosController = {
             <strong>${Calculations.formatearMoneda(balanceAcumulado)}</strong>
           </td>
         </tr>
+      `;
+    }).join('');
+  },
+
+  renderMovimientosMobile(ahorros) {
+    let balanceAcumulado = 0;
+    return ahorros.map(ahorro => {
+      balanceAcumulado += ahorro.monto;
+      const isEntrada = ahorro.tipo === 'entrada';
+      const iconoOrigen = ahorro.origen === 'gasto' ? '💸' : '💵';
+      const badgeClass = isEntrada ? 'badge-success' : 'badge-danger';
+      const tipoLabel = isEntrada ? 'Entrada' : 'Salida';
+      const montoClass = isEntrada ? 'text-success' : 'text-danger';
+      const signo = isEntrada ? '+' : '';
+      
+      return `
+        <div class="mobile-list-item" onclick="this.classList.toggle('expanded')">
+          <div class="mobile-item-main">
+            <div class="mobile-item-primary">
+              <div style="font-size: 0.85rem; color: var(--text-secondary);">${Calculations.formatearFecha(ahorro.fecha)}</div>
+              <div style="margin: 4px 0;">
+                <span class="${montoClass}" style="font-weight: 600;">${signo}${Calculations.formatearMoneda(Math.abs(ahorro.monto))}</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">Balance</div>
+              <div style="font-weight: 600;">${Calculations.formatearMoneda(balanceAcumulado)}</div>
+            </div>
+          </div>
+          <div class="mobile-item-details">
+            <div style="margin-bottom: var(--spacing-sm);">
+              <strong>Descripción:</strong> ${ahorro.descripcion || '-'}
+            </div>
+            <div style="margin-bottom: var(--spacing-sm);">
+              <strong>Tipo:</strong> <span class="badge ${badgeClass}">${tipoLabel}</span>
+            </div>
+            <div>
+              <strong>Origen:</strong> 
+              <span title="${ahorro.origen === 'gasto' ? 'Dinero guardado' : 'Dinero retirado'}">
+                ${iconoOrigen} ${ahorro.origen}
+              </span>
+            </div>
+          </div>
+        </div>
       `;
     }).join('');
   }

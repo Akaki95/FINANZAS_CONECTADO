@@ -133,6 +133,38 @@ const CustodiaController = {
                   </tbody>
                 </table>
               </div>
+              <div class="mobile-list">
+                ${resumenPersonas.map(p => `
+                  <div class="mobile-list-item" onclick="this.classList.toggle('expanded')">
+                    <div class="mobile-item-main">
+                      <div class="mobile-item-primary">
+                        <strong>${p.persona}</strong>
+                      </div>
+                      <div style="text-align: right;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Saldo</div>
+                        <div style="font-weight: 600;">${Calculations.formatearMoneda(p.saldo)}</div>
+                      </div>
+                    </div>
+                    <div class="mobile-item-details">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                        <div>
+                          <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Depósitos</div>
+                          <div class="text-success" style="font-weight: 600;">+${Calculations.formatearMoneda(p.depositos)}</div>
+                        </div>
+                        <div>
+                          <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Retiros</div>
+                          <div class="text-danger" style="font-weight: 600;">-${Calculations.formatearMoneda(p.retiros)}</div>
+                        </div>
+                      </div>
+                      <div style="margin-bottom: var(--spacing-sm);">
+                        <strong>Movimientos:</strong> <span class="badge">${p.movimientos}</span>
+                      </div>
+                      <button class="btn btn-small btn-secondary" 
+                              onclick="event.stopPropagation(); CustodiaController.verDetalle('${p.persona}')">Ver Detalle</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
             </div>
           `}
         </div>
@@ -246,6 +278,40 @@ const CustodiaController = {
             </tbody>
           </table>
         </div>
+        <div class="mobile-list">
+          ${custodias.map(c => `
+            <div class="mobile-list-item" onclick="this.classList.toggle('expanded')">
+              <div class="mobile-item-main">
+                <div class="mobile-item-primary">
+                  <div style="font-size: 0.85rem; color: var(--text-secondary);">${Calculations.formatearFecha(c.fecha)}</div>
+                  <div style="margin: 4px 0;"><strong>${c.persona}</strong></div>
+                </div>
+                <div class="mobile-item-amount ${c.tipo === 'deposito' ? 'text-success' : 'text-danger'}">
+                  ${c.tipo === 'deposito' ? '+' : '-'}${Calculations.formatearMoneda(c.monto)}
+                </div>
+              </div>
+              <div class="mobile-item-details">
+                <div style="margin-bottom: var(--spacing-sm);">
+                  <strong>Tipo:</strong> 
+                  <span class="badge ${c.tipo === 'deposito' ? 'badge-success' : 'badge-danger'}">
+                    ${c.tipo === 'deposito' ? '💰 Depósito' : '💸 Retiro'}
+                  </span>
+                </div>
+                <div style="margin-bottom: var(--spacing-sm);">
+                  <strong>Descripción:</strong> ${c.descripcion || '-'}
+                </div>
+                <div style="display: flex; gap: var(--spacing-sm);">
+                  <button class="btn btn-small btn-secondary" 
+                          data-action="editar" data-id="${c.id}"
+                          onclick="event.stopPropagation()">✏️ Editar</button>
+                  <button class="btn btn-small btn-danger" 
+                          data-action="eliminar" data-id="${c.id}"
+                          onclick="event.stopPropagation()">🗑️ Eliminar</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   },
@@ -284,34 +350,65 @@ const CustodiaController = {
           <div class="summary-card-value">${Calculations.formatearMoneda(saldo)}</div>
         </div>
       </div>
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th class="text-right">Monto</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${movimientos.map(m => `
+      ${movimientos.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-title">No hay movimientos</div>
+        </div>
+      ` : `
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
               <tr>
-                <td>${Calculations.formatearFecha(m.fecha)}</td>
-                <td>
-                  <span class="badge ${m.tipo === 'deposito' ? 'badge-success' : 'badge-danger'}">
-                    ${m.tipo === 'deposito' ? '💰 Depósito' : '💸 Retiro'}
-                  </span>
-                </td>
-                <td>${m.descripcion || '-'}</td>
-                <td class="text-right ${m.tipo === 'deposito' ? 'text-success' : 'text-danger'}">
-                  <strong>${m.tipo === 'deposito' ? '+' : '-'}${Calculations.formatearMoneda(m.monto)}</strong>
-                </td>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th class="text-right">Monto</th>
               </tr>
+            </thead>
+            <tbody>
+              ${movimientos.map(m => `
+                <tr>
+                  <td>${Calculations.formatearFecha(m.fecha)}</td>
+                  <td>
+                    <span class="badge ${m.tipo === 'deposito' ? 'badge-success' : 'badge-danger'}">
+                      ${m.tipo === 'deposito' ? '💰 Depósito' : '💸 Retiro'}
+                    </span>
+                  </td>
+                  <td>${m.descripcion || '-'}</td>
+                  <td class="text-right ${m.tipo === 'deposito' ? 'text-success' : 'text-danger'}">
+                    <strong>${m.tipo === 'deposito' ? '+' : '-'}${Calculations.formatearMoneda(m.monto)}</strong>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="mobile-list">
+            ${movimientos.map(m => `
+              <div class="mobile-list-item" onclick="this.classList.toggle('expanded')">
+                <div class="mobile-item-main">
+                  <div class="mobile-item-primary">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${Calculations.formatearFecha(m.fecha)}</div>
+                    <div style="margin: 4px 0;">
+                      <span class="badge ${m.tipo === 'deposito' ? 'badge-success' : 'badge-danger'}">
+                        ${m.tipo === 'deposito' ? '💰 Depósito' : '💸 Retiro'}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="mobile-item-amount ${m.tipo === 'deposito' ? 'text-success' : 'text-danger'}">
+                    ${m.tipo === 'deposito' ? '+' : '-'}${Calculations.formatearMoneda(m.monto)}
+                  </div>
+                </div>
+                <div class="mobile-item-details">
+                  <div style="margin-bottom: var(--spacing-sm);">
+                    <strong>Descripción:</strong> ${m.descripcion || '-'}
+                  </div>
+                </div>
+              </div>
             `).join('')}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </div>
+      `}
     `;
     
     modal.classList.add('show');

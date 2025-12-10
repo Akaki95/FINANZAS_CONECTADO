@@ -47,23 +47,51 @@ const IngresosController = {
                 <div class="empty-state-title">No hay ingresos registrados</div>
               </div>
             ` : `
-              <table class="table">
-                <thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th><th>Acciones</th></tr></thead>
-                <tbody>
-                  ${ingresos.map(i => `
-                    <tr>
-                      <td>${new Date(i.fecha).toLocaleDateString('es-ES')}</td>
-                      <td>${i.descripcion || '-'}</td>
-                      <td><span class="badge badge-success">${i.tipo}</span></td>
-                      <td class="text-success">${Calculations.formatearMoneda(i.monto)}</td>
-                      <td>
-                        <button class="btn btn-small btn-secondary" onclick="IngresosController.editar('${i.id}')">Editar</button>
-                        <button class="btn btn-small btn-danger" onclick="IngresosController.eliminar('${i.id}')">Eliminar</button>
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th><th>Acciones</th></tr></thead>
+                  <tbody>
+                    ${ingresos.map(i => `
+                      <tr>
+                        <td>${new Date(i.fecha).toLocaleDateString('es-ES')}</td>
+                        <td>${i.descripcion || '-'}</td>
+                        <td><span class="badge badge-success">${i.tipo}</span></td>
+                        <td class="text-success">${Calculations.formatearMoneda(i.monto)}</td>
+                        <td>
+                          <button class="btn btn-small btn-secondary" onclick="IngresosController.editar('${i.id}')">Editar</button>
+                          <button class="btn btn-small btn-danger" onclick="IngresosController.eliminar('${i.id}')">Eliminar</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="mobile-list">
+                ${ingresos.map(i => `
+                  <div class="mobile-list-item" onclick="this.classList.toggle('expanded')">
+                    <div class="mobile-item-main">
+                      <div class="mobile-item-primary">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${new Date(i.fecha).toLocaleDateString('es-ES')}</div>
+                        <div style="margin: 4px 0;">
+                          <span class="badge badge-success">${i.tipo}</span>
+                        </div>
+                      </div>
+                      <div class="mobile-item-amount text-success">${Calculations.formatearMoneda(i.monto)}</div>
+                    </div>
+                    <div class="mobile-item-details">
+                      <div style="margin-bottom: var(--spacing-sm);">
+                        <strong>Descripción:</strong> ${i.descripcion || '-'}
+                      </div>
+                      <div style="display: flex; gap: var(--spacing-sm);">
+                        <button class="btn btn-small btn-secondary" 
+                                onclick="event.stopPropagation(); IngresosController.editar('${i.id}')">Editar</button>
+                        <button class="btn btn-small btn-danger" 
+                                onclick="event.stopPropagation(); IngresosController.eliminar('${i.id}')">Eliminar</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
             `}
           </div>
         </div>

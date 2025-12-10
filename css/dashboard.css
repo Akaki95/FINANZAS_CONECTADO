@@ -337,6 +337,29 @@
 @media (max-width: 768px) {
   .summary-cards {
     grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .summary-card {
+    padding: var(--spacing-md);
+  }
+  
+  .summary-card-icon {
+    font-size: 2rem;
+    right: 12px;
+    top: 12px;
+  }
+  
+  .summary-card-label {
+    font-size: 0.8rem;
+  }
+  
+  .summary-card-value {
+    font-size: 1.4rem;
+  }
+  
+  .summary-card-change {
+    font-size: 0.75rem;
   }
   
   .charts-container {
@@ -346,6 +369,7 @@
   .chart-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--spacing-sm);
   }
   
   .chart-date-filter {
@@ -360,6 +384,7 @@
   
   .filters-row {
     flex-direction: column;
+    gap: var(--spacing-sm);
   }
   
   .filter-group {
@@ -367,11 +392,15 @@
   }
   
   .dashboard-title {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
   
-  .summary-card-value {
-    font-size: 1.5rem;
+  .dashboard-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .dashboard-header {
+    margin-bottom: var(--spacing-md);
   }
 }
 

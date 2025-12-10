@@ -54,33 +54,61 @@ const GastosController = {
                 <div class="empty-state-text">Comienza agregando tu primer gasto</div>
               </div>
             ` : `
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Descripción</th>
-                    <th>Categoría</th>
-                    <th>Monto</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${gastos.map(gasto => `
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
                     <tr>
-                      <td>${new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
-                      <td>${gasto.descripcion || '-'}</td>
-                      <td><span class="category-chip category-${gasto.categoria.toLowerCase()}">${gasto.categoria}</span></td>
-                      <td class="text-danger">${Calculations.formatearMoneda(gasto.monto)}</td>
-                      <td>
-                        <button class="btn btn-small btn-secondary" 
-                                onclick="GastosController.editar('${gasto.id}')">Editar</button>
-                        <button class="btn btn-small btn-danger" 
-                                onclick="GastosController.eliminar('${gasto.id}')">Eliminar</button>
-                      </td>
+                      <th>Fecha</th>
+                      <th>Descripción</th>
+                      <th>Categoría</th>
+                      <th>Monto</th>
+                      <th>Acciones</th>
                     </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    ${gastos.map(gasto => `
+                      <tr>
+                        <td>${new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
+                        <td>${gasto.descripcion || '-'}</td>
+                        <td><span class="category-chip category-${gasto.categoria.toLowerCase()}">${gasto.categoria}</span></td>
+                        <td class="text-danger">${Calculations.formatearMoneda(gasto.monto)}</td>
+                        <td>
+                          <button class="btn btn-small btn-secondary" 
+                                  onclick="GastosController.editar('${gasto.id}')">Editar</button>
+                          <button class="btn btn-small btn-danger" 
+                                  onclick="GastosController.eliminar('${gasto.id}')">Eliminar</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="mobile-list">
+                ${gastos.map(gasto => `
+                  <div class="mobile-list-item" onclick="this.classList.toggle('expanded')">
+                    <div class="mobile-item-main">
+                      <div class="mobile-item-primary">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${new Date(gasto.fecha).toLocaleDateString('es-ES')}</div>
+                        <div style="margin: 4px 0;">
+                          <span class="category-chip category-${gasto.categoria.toLowerCase()}">${gasto.categoria}</span>
+                        </div>
+                      </div>
+                      <div class="mobile-item-amount text-danger">${Calculations.formatearMoneda(gasto.monto)}</div>
+                    </div>
+                    <div class="mobile-item-details">
+                      <div style="margin-bottom: var(--spacing-sm);">
+                        <strong>Descripción:</strong> ${gasto.descripcion || '-'}
+                      </div>
+                      <div style="display: flex; gap: var(--spacing-sm);">
+                        <button class="btn btn-small btn-secondary" 
+                                onclick="event.stopPropagation(); GastosController.editar('${gasto.id}')">Editar</button>
+                        <button class="btn btn-small btn-danger" 
+                                onclick="event.stopPropagation(); GastosController.eliminar('${gasto.id}')">Eliminar</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
             `}
           </div>
         </div>
