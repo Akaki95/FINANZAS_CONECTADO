@@ -31,14 +31,12 @@
     // Programar aplicación de reglas automáticas cada hora
     setInterval(aplicarReglasAutomaticas, 3600000); // 1 hora
 
-    // Registrar rutas con sincronización automática después del render
+    // Registrar rutas con sincronización automática
     const renderAndSync = async (renderFn) => {
-      // Primero renderizar
+      // Sincronizar datos desde MongoDB antes de renderizar
+      await cargarDatosIniciales();
+      // Luego renderizar con los datos actualizados
       await renderFn();
-      // Luego sincronizar
-      if (SyncService.isOnline) {
-        SyncService.processSyncQueue();
-      }
     };
 
     Router.register('dashboard', () => renderAndSync(() => DashboardView.render()));
