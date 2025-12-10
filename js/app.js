@@ -31,24 +31,26 @@
     // Programar aplicación de reglas automáticas cada hora
     setInterval(aplicarReglasAutomaticas, 3600000); // 1 hora
 
-    // Registrar rutas con sincronización automática
-    const syncAndRender = (renderFn) => {
+    // Registrar rutas con sincronización automática después del render
+    const renderAndSync = async (renderFn) => {
+      // Primero renderizar
+      await renderFn();
+      // Luego sincronizar
       if (SyncService.isOnline) {
         SyncService.processSyncQueue();
       }
-      renderFn();
     };
 
-    Router.register('dashboard', () => syncAndRender(DashboardView.render));
-    Router.register('gastos', () => syncAndRender(GastosController.render));
-    Router.register('ingresos', () => syncAndRender(IngresosController.render));
-    Router.register('deudas', () => syncAndRender(DeudasController.render));
-    Router.register('prestamos', () => syncAndRender(PrestamosController.render));
-    Router.register('patrimonio', () => syncAndRender(PatrimonioController.render));
-    Router.register('ahorros', () => syncAndRender(AhorrosController.render));
-    Router.register('custodia', () => syncAndRender(CustodiaController.render));
-    Router.register('auditoria', () => syncAndRender(AuditoriaController.render));
-    Router.register('configuracion', () => syncAndRender(ConfigController.render));
+    Router.register('dashboard', () => renderAndSync(() => DashboardView.render()));
+    Router.register('gastos', () => renderAndSync(() => GastosController.render()));
+    Router.register('ingresos', () => renderAndSync(() => IngresosController.render()));
+    Router.register('deudas', () => renderAndSync(() => DeudasController.render()));
+    Router.register('prestamos', () => renderAndSync(() => PrestamosController.render()));
+    Router.register('patrimonio', () => renderAndSync(() => PatrimonioController.render()));
+    Router.register('ahorros', () => renderAndSync(() => AhorrosController.render()));
+    Router.register('custodia', () => renderAndSync(() => CustodiaController.render()));
+    Router.register('auditoria', () => renderAndSync(() => AuditoriaController.render()));
+    Router.register('configuracion', () => renderAndSync(() => ConfigController.render()));
 
     // Inicializar router
     Router.init();
