@@ -8,74 +8,57 @@
     
     // Inicializar tema
     ConfigController.initTheme();
-    
+
     // Inicializar servicios
     SyncService.init();
-    
+
+    // Sincronizar datos al cargar la página
+    if (SyncService.isOnline) {
+      SyncService.processSyncQueue();
+    }
+
     // Inicializar configuración (carga desde MongoDB solo si no existe localmente)
     ConfigModel.init().catch(error => {
       Logger.error('Error inicializando configuración', error);
     });
-    
+
     // Inicializar modelos
     AuditoriaModel.init();
-    
+
     // Aplicar reglas automáticas al iniciar
     aplicarReglasAutomaticas();
-    
+
     // Programar aplicación de reglas automáticas cada hora
     setInterval(aplicarReglasAutomaticas, 3600000); // 1 hora
-    
-    // Registrar rutas
-    Router.register('dashboard', () => {
-      DashboardView.render();
-    });
-    
-    Router.register('gastos', () => {
-      GastosController.render();
-    });
-    
-    Router.register('ingresos', () => {
-      IngresosController.render();
-    });
-    
-    Router.register('deudas', () => {
-      DeudasController.render();
-    });
-    
-    Router.register('prestamos', () => {
-      PrestamosController.render();
-    });
-    
-    Router.register('patrimonio', () => {
-      PatrimonioController.render();
-    });
-    
-    Router.register('ahorros', () => {
-      AhorrosController.render();
-    });
-    
-    Router.register('custodia', () => {
-      CustodiaController.render();
-    });
-    
-    Router.register('auditoria', () => {
-      AuditoriaController.render();
-    });
-    
-    Router.register('configuracion', () => {
-      ConfigController.render();
-    });
-    
+
+    // Registrar rutas con sincronización automática
+    const syncAndRender = (renderFn) => {
+      if (SyncService.isOnline) {
+        SyncService.processSyncQueue();
+      }
+      renderFn();
+    };
+
+    Router.register('dashboard', () => syncAndRender(DashboardView.render));
+    Router.register('gastos', () => syncAndRender(GastosController.render));
+    Router.register('ingresos', () => syncAndRender(IngresosController.render));
+    Router.register('deudas', () => syncAndRender(DeudasController.render));
+    Router.register('prestamos', () => syncAndRender(PrestamosController.render));
+    Router.register('patrimonio', () => syncAndRender(PatrimonioController.render));
+    Router.register('ahorros', () => syncAndRender(AhorrosController.render));
+    Router.register('custodia', () => syncAndRender(CustodiaController.render));
+    Router.register('auditoria', () => syncAndRender(AuditoriaController.render));
+    Router.register('configuracion', () => syncAndRender(ConfigController.render));
+
     // Inicializar router
     Router.init();
-    
+
     // Configurar modal
     setupModal();
-    
+
     // Configurar cierre de modales de formularios
     setupFormModals();
-    
+
     // Configurar botón de sincronización manual
     setupSyncButton();
     
