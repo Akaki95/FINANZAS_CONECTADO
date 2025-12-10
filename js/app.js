@@ -79,6 +79,9 @@
     // Configurar botón de sincronización manual
     setupSyncButton();
     
+    // Configurar menú hamburguesa responsive
+    setupMobileMenu();
+    
     // Si quieres cargar datos de ejemplo, descomenta la siguiente línea:
     // cargarDatosDeEjemplo();
     
@@ -401,6 +404,46 @@
     } catch (error) {
       Logger.error('Error cargando datos de ejemplo', error);
     }
+  }
+  
+  // Configurar menú hamburguesa responsive
+  function setupMobileMenu() {
+    const menuToggle = document.getElementById('menu-toggle');
+    const nav = document.getElementById('nav');
+    const navBtns = nav.querySelectorAll('.nav-btn');
+    
+    if (!menuToggle || !nav) return;
+    
+    // Toggle del menú
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      nav.classList.toggle('show');
+      menuToggle.textContent = nav.classList.contains('show') ? '✕' : '☰';
+    });
+    
+    // Cerrar menú al hacer clic en un item
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        nav.classList.remove('show');
+        menuToggle.textContent = '☰';
+      });
+    });
+    
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (nav.classList.contains('show') && !nav.contains(e.target) && e.target !== menuToggle) {
+        nav.classList.remove('show');
+        menuToggle.textContent = '☰';
+      }
+    });
+    
+    // Cerrar menú al redimensionar ventana (si se vuelve grande)
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1100 && nav.classList.contains('show')) {
+        nav.classList.remove('show');
+        menuToggle.textContent = '☰';
+      }
+    });
   }
   
   // Aplicar reglas automáticas de gastos e ingresos
