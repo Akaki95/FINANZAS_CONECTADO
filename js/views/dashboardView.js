@@ -164,7 +164,7 @@ const DashboardView = {
         <div class="charts-container">
           <div class="chart-card">
             <div class="chart-header">
-              <h3 class="chart-title">Ingresos vs Gastos</h3>
+              <h3 class="chart-title">Ingresos por Tipo (%)</h3>
               <div class="chart-date-filter">
                 <input type="date" id="comparacion-inicio" class="date-input" 
                        value="${this.filtros.comparacion.inicio}"
@@ -386,16 +386,40 @@ const DashboardView = {
     if (!ctx) return;
     
     const filtro = this.filtros.comparacion;
-    let gastos = GastoModel.getAll();
     let ingresos = IngresoModel.getAll();
     
     // Aplicar filtro de fechas
     if (filtro.inicio && filtro.fin) {
-      gastos = Calculations.filtrarPorRango(gastos, filtro.inicio, filtro.fin);
       ingresos = Calculations.filtrarPorRango(ingresos, filtro.inicio, filtro.fin);
     }
     
-    const cashflow = Calculations.calcularCashflowRango(ingresos, gastos, filtro.inicio, filtro.fin);
+    // Calcular ingresos por tipo
+    const ingresosPorTipo = {};
+    let totalIngresos = 0;
+    
+    ingresos.forEach(ingreso => {
+      const tipo = ingreso.tipo || 'Sin tipo';
+      if (!ingresosPorTipo[tipo]) {
+        ingresosPorTipo[tipo] = 0;
+      }
+      ingresosPorTipo[tipo] += ingreso.monto;
+      totalIngresos += ingreso.monto;
+    });
+    
+    // Convertir a arrays y calcular porcentajes
+    const tipos = Object.keys(ingresosPorTipo).sort((a, b) => 
+      ingresosPorTipo[b] - ingresosPorTipo[a]
+    );
+    const montos = tipos.map(tipo => ingresosPorTipo[tipo]);
+    const porcentajes = tipos.map(tipo => 
+      totalIngresos > 0 ? ((ingresosPorTipo[tipo] / totalIngresos) * 100).toFixed(1) : 0
+    );
+    
+    // Colores para los tipos
+    const colores = [
+      '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4',
+      '#FFEB3B', '#E91E63', '#8BC34A', '#03A9F4', '#4CAF50'
+    ];
     
     if (this.charts.comparacion) {
       this.charts.comparacion.destroy();
@@ -404,17 +428,14 @@ const DashboardView = {
     this.charts.comparacion = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: cashflow.map(c => c.mes),
+        labels: tipos,
         datasets: [
           {
-            label: 'Ingresos',
-            data: cashflow.map(c => c.ingresos),
-            backgroundColor: '#4CAF50'
-          },
-          {
-            label: 'Gastos',
-            data: cashflow.map(c => c.gastos),
-            backgroundColor: '#f44336'
+            label: 'Porcentaje del Total (%)',
+            data: porcentajes,
+            backgroundColor: colores.slice(0, tipos.length),
+            borderColor: colores.slice(0, tipos.length).map(c => c.replace(')', ', 0.8)').replace('rgb', 'rgba')),
+            borderWidth: 1
           }
         ]
       },
@@ -423,12 +444,41 @@ const DashboardView = {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: true
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const tipo = context.label;
+                const porcentaje = context.parsed.y;
+                const monto = montos[context.dataIndex];
+                return [
+                  `${tipo}: ${porcentaje}%`,
+                  `Monto: ${Calculations.formatearMoneda(monto)}`
+                ];
+              }
+            }
           }
         },
         scales: {
           y: {
-            beginAtZero: true
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            title: {
+              display: true,
+              text: 'Porcentaje del Total (%)'
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
           }
         }
       }
