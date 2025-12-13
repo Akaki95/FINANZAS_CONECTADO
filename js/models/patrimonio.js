@@ -67,18 +67,24 @@ const PatrimonioModel = {
       // 3. Préstamos pendientes (dinero que nos deben)
       if (typeof PrestamoModel !== 'undefined') {
         const prestamos = PrestamoModel.getAll() || [];
-        const prestamosActivos = prestamos.filter(p => parseFloat(p.montoPendiente) > 0);
+        const prestamosActivos = prestamos.filter(p => {
+          // Compatibilidad con ambos formatos (antiguo y nuevo)
+          const montoPendiente = p.montoActual !== undefined ? p.montoActual : p.montoPendiente;
+          return parseFloat(montoPendiente) > 0;
+        });
         
         console.log('[PatrimonioModel] Préstamos:', {
           total: prestamos.length,
-          activos: prestamosActivos.length
+          activos: prestamosActivos.length,
+          prestamosData: prestamos
         });
         
         prestamosActivos.forEach(prestamo => {
+          const montoPendiente = prestamo.montoActual !== undefined ? prestamo.montoActual : prestamo.montoPendiente;
           activos.push({
             id: `auto_prestamo_${prestamo.id}`,
             nombre: `Préstamo a: ${prestamo.persona}`,
-            valor: parseFloat(prestamo.montoPendiente) || 0,
+            valor: parseFloat(montoPendiente) || 0,
             categoria: 'cuentas_cobrar',
             descripcion: prestamo.fechaVencimiento 
               ? `Por cobrar. Vence: ${new Date(prestamo.fechaVencimiento).toLocaleDateString()}` 
