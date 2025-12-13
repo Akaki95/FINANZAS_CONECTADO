@@ -69,11 +69,11 @@
     // Configurar cierre de modales de formularios
     setupFormModals();
 
+    // Configurar menú hamburguesa responsive (después del router)
+    setupMobileMenu();
+
     // Configurar botón de sincronización manual
     setupSyncButton();
-    
-    // Configurar menú hamburguesa responsive
-    setupMobileMenu();
     
     // Si quieres cargar datos de ejemplo, descomenta la siguiente línea:
     // cargarDatosDeEjemplo();
@@ -384,17 +384,30 @@
       menuToggle.textContent = nav.classList.contains('show') ? '✕' : '☰';
     });
     
-    // Cerrar menú al hacer clic en un item
-    navBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        nav.classList.remove('show');
-        menuToggle.textContent = '☰';
-      });
+    // Cerrar menú al hacer clic en un item (usar delegación de eventos)
+    nav.addEventListener('click', (e) => {
+      if (e.target.classList.contains('nav-btn')) {
+        // Pequeño delay para que se vea la selección
+        setTimeout(() => {
+          nav.classList.remove('show');
+          menuToggle.textContent = '☰';
+        }, 150);
+      }
     });
     
     // Cerrar menú al hacer clic fuera
     document.addEventListener('click', (e) => {
-      if (nav.classList.contains('show') && !nav.contains(e.target) && e.target !== menuToggle) {
+      if (nav.classList.contains('show') && 
+          !nav.contains(e.target) && 
+          e.target !== menuToggle) {
+        nav.classList.remove('show');
+        menuToggle.textContent = '☰';
+      }
+    });
+    
+    // Cerrar menú al cambiar de ruta (hashchange)
+    window.addEventListener('hashchange', () => {
+      if (nav.classList.contains('show')) {
         nav.classList.remove('show');
         menuToggle.textContent = '☰';
       }
@@ -402,7 +415,7 @@
     
     // Cerrar menú al redimensionar ventana (si se vuelve grande)
     window.addEventListener('resize', () => {
-      if (window.innerWidth > 1100 && nav.classList.contains('show')) {
+      if (window.innerWidth > 768 && nav.classList.contains('show')) {
         nav.classList.remove('show');
         menuToggle.textContent = '☰';
       }

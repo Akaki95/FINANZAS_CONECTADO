@@ -267,22 +267,20 @@ body {
   }
 }
 
-
-
 @media (max-width: 768px) {
 
   #nav{
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%);
-    width: 60% !important;
-    padding: 12px;
+    width: 85% !important;
+    max-width: 360px !important;
+    padding: 0;
   }
 
   .nav {
-    display: none;
     position: absolute;
-    top: 48px;
+    top: 56px;
     left: 0;
     width: 100%;
     background: linear-gradient(135deg, #f8fafc 60%, #e3e9f7 100%);
@@ -290,16 +288,40 @@ body {
     border-radius: 12px;
     flex-direction: column;
     z-index: 9999;
-    transition: all 0.3s ease;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
     max-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
+    opacity: 0;
     border: 1px solid #e0e6ed;
+    padding: 0;
   }
+  
   .nav.show {
-    display: flex;
-    max-height: calc(100vh - 80px);
-    padding: 8px 0;
+    max-height: 600px !important;
+    opacity: 1 !important;
+    padding: 12px 8px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Scrollbar visible y estilizada */
+  .nav.show::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .nav.show::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+    margin: 8px 0;
+  }
+  
+  .nav.show::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+  }
+  
+  .nav.show::-webkit-scrollbar-thumb:hover {
+    background: #3e8e41;
   }
 
   .nav-btn {
@@ -309,10 +331,12 @@ body {
     display: flex;
     width: 100%;
     padding: 14px 16px;
-    margin: 2px 0;
+    margin: 3px 0;
     border-radius: 8px;
     font-size: 1rem;
     white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 48px;
   }
 
   .header {
@@ -483,6 +507,50 @@ body {
       opacity: 1;
       max-height: 500px;
     }
+  }
+}
+
+/* Móvil en modo horizontal (landscape) - DEBE IR DESPUÉS de @768px para tener prioridad */
+@media (max-width: 896px) and (max-height: 500px) and (orientation: landscape) {
+  .nav.show {
+    max-height: calc(100vh - 70px) !important;
+    top: 50px !important;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  #nav {
+    width: 70% !important;
+    max-width: 320px !important;
+  }
+  
+  .nav-btn {
+    padding: 9px 12px !important;
+    font-size: 0.9rem !important;
+    margin: 2px 0 !important;
+    min-height: 40px !important;
+  }
+  
+  /* Scrollbar siempre visible en horizontal */
+  .nav.show::-webkit-scrollbar {
+    width: 10px !important;
+    -webkit-appearance: none !important;
+  }
+  
+  .nav.show::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1) !important;
+    border-radius: 10px !important;
+    margin: 4px 0 !important;
+  }
+  
+  .nav.show::-webkit-scrollbar-thumb {
+    background: var(--primary-color) !important;
+    border-radius: 10px !important;
+    border: 2px solid rgba(255,255,255,0.2) !important;
+  }
+  
+  .nav.show::-webkit-scrollbar-thumb:hover {
+    background: #3e8e41 !important;
   }
 }
 
