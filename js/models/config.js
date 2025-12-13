@@ -184,18 +184,18 @@ const ConfigModel = {
   // Migrar configuración antigua agregando categorías faltantes
   migrateConfig(config) {
     let updated = false;
-    const modulosActualizados = [];
+    const modulosActualizados = new Set(); // Usar Set para evitar duplicados
     
     // Inicializar patrimonio_activos si no existe
     if (!config.patrimonio_activos) {
       config.patrimonio_activos = this.DEFAULT_CONFIG.patrimonio_activos;
       updated = true;
-      modulosActualizados.push('patrimonio_activos');
+      modulosActualizados.add('patrimonio_activos');
       Logger.log('patrimonio_activos inicializado con configuración por defecto');
     } else if (!config.patrimonio_activos.categorias) {
       config.patrimonio_activos.categorias = this.DEFAULT_CONFIG.patrimonio_activos.categorias;
       updated = true;
-      modulosActualizados.push('patrimonio_activos');
+      modulosActualizados.add('patrimonio_activos');
       Logger.log('Categorías de activos inicializadas');
     } else {
       // Verificar y agregar categoría 'efectivo' en activos si no existe
@@ -204,18 +204,23 @@ const ConfigModel = {
         if (efectivoIndex === -1) {
           config.patrimonio_activos.categorias.unshift({ ...efectivoDefault });
           updated = true;
-          modulosActualizados.push('patrimonio_activos');
+          modulosActualizados.add('patrimonio_activos');
           Logger.log('Categoría "efectivo" agregada a activos');
         } else {
-          // Actualizar SIEMPRE nombre, icono, ayuda y sistema según DEFAULT_CONFIG
+          // Actualizar solo si hay diferencias
           const cat = config.patrimonio_activos.categorias[efectivoIndex];
-          cat.nombre = efectivoDefault.nombre;
-          cat.icono = efectivoDefault.icono;
-          cat.ayuda = efectivoDefault.ayuda;
-          cat.sistema = true;
-          updated = true;
-          modulosActualizados.push('patrimonio_activos');
-          Logger.log('Categoría "efectivo" forzada desde DEFAULT_CONFIG');
+          if (cat.nombre !== efectivoDefault.nombre || 
+              cat.icono !== efectivoDefault.icono || 
+              cat.ayuda !== efectivoDefault.ayuda || 
+              !cat.sistema) {
+            cat.nombre = efectivoDefault.nombre;
+            cat.icono = efectivoDefault.icono;
+            cat.ayuda = efectivoDefault.ayuda;
+            cat.sistema = true;
+            updated = true;
+            modulosActualizados.add('patrimonio_activos');
+            Logger.log('Categoría "efectivo" actualizada desde DEFAULT_CONFIG');
+          }
         }
       
       // Verificar y marcar categoría 'cuentas' como sistema
@@ -223,13 +228,18 @@ const ConfigModel = {
         const cuentasDefault = this.DEFAULT_CONFIG.patrimonio_activos.categorias.find(cat => cat.id === 'cuentas');
         if (cuentasIndex !== -1) {
           const cat = config.patrimonio_activos.categorias[cuentasIndex];
-          cat.nombre = cuentasDefault.nombre;
-          cat.icono = cuentasDefault.icono;
-          cat.ayuda = cuentasDefault.ayuda;
-          cat.sistema = true;
-          updated = true;
-          modulosActualizados.push('patrimonio_activos');
-          Logger.log('Categoría "cuentas" forzada desde DEFAULT_CONFIG');
+          if (cat.nombre !== cuentasDefault.nombre || 
+              cat.icono !== cuentasDefault.icono || 
+              cat.ayuda !== cuentasDefault.ayuda || 
+              !cat.sistema) {
+            cat.nombre = cuentasDefault.nombre;
+            cat.icono = cuentasDefault.icono;
+            cat.ayuda = cuentasDefault.ayuda;
+            cat.sistema = true;
+            updated = true;
+            modulosActualizados.push('patrimonio_activos');
+            Logger.log('Categoría "cuentas" actualizada desde DEFAULT_CONFIG');
+          }
         }
       
       // Verificar y agregar categoría 'cuentas_cobrar' en activos si no existe
@@ -243,18 +253,23 @@ const ConfigModel = {
             config.patrimonio_activos.categorias.unshift({ ...cuentasCobrarDefault });
           }
           updated = true;
-          modulosActualizados.push('patrimonio_activos');
+          modulosActualizados.add('patrimonio_activos');
           Logger.log('Categoría "cuentas_cobrar" agregada a activos');
         } else {
-          // Actualizar SIEMPRE nombre, icono, ayuda y sistema según DEFAULT_CONFIG
+          // Actualizar solo si hay diferencias
           const cat = config.patrimonio_activos.categorias[cuentasCobrarIndex];
-          cat.nombre = cuentasCobrarDefault.nombre;
-          cat.icono = cuentasCobrarDefault.icono;
-          cat.ayuda = cuentasCobrarDefault.ayuda;
-          cat.sistema = true;
-          updated = true;
-          modulosActualizados.push('patrimonio_activos');
-          Logger.log('Categoría "cuentas_cobrar" forzada desde DEFAULT_CONFIG');
+          if (cat.nombre !== cuentasCobrarDefault.nombre || 
+              cat.icono !== cuentasCobrarDefault.icono || 
+              cat.ayuda !== cuentasCobrarDefault.ayuda || 
+              !cat.sistema) {
+            cat.nombre = cuentasCobrarDefault.nombre;
+            cat.icono = cuentasCobrarDefault.icono;
+            cat.ayuda = cuentasCobrarDefault.ayuda;
+            cat.sistema = true;
+            updated = true;
+            modulosActualizados.push('patrimonio_activos');
+            Logger.log('Categoría "cuentas_cobrar" actualizada desde DEFAULT_CONFIG');
+          }
         }
     }
     
@@ -262,12 +277,12 @@ const ConfigModel = {
     if (!config.patrimonio_pasivos) {
       config.patrimonio_pasivos = this.DEFAULT_CONFIG.patrimonio_pasivos;
       updated = true;
-      modulosActualizados.push('patrimonio_pasivos');
+      modulosActualizados.add('patrimonio_pasivos');
       Logger.log('patrimonio_pasivos inicializado con configuración por defecto');
     } else if (!config.patrimonio_pasivos.categorias) {
       config.patrimonio_pasivos.categorias = this.DEFAULT_CONFIG.patrimonio_pasivos.categorias;
       updated = true;
-      modulosActualizados.push('patrimonio_pasivos');
+      modulosActualizados.add('patrimonio_pasivos');
       Logger.log('Categorías de pasivos inicializadas');
     } else {
       // Verificar y agregar categoría 'deudas' en pasivos si no existe
@@ -277,13 +292,13 @@ const ConfigModel = {
           { id: 'deudas', nombre: 'Deudas Generales', icono: '📋', ayuda: 'Deudas pendientes de pago registradas', sistema: true }
         );
         updated = true;
-        modulosActualizados.push('patrimonio_pasivos');
+        modulosActualizados.add('patrimonio_pasivos');
         Logger.log('Categoría "deudas" agregada a pasivos');
       } else if (!config.patrimonio_pasivos.categorias[deudasIndex].sistema) {
         // Actualizar categoría existente para marcarla como sistema
         config.patrimonio_pasivos.categorias[deudasIndex].sistema = true;
         updated = true;
-        modulosActualizados.push('patrimonio_pasivos');
+        modulosActualizados.add('patrimonio_pasivos');
         Logger.log('Categoría "deudas" marcada como sistema');
       }
     }

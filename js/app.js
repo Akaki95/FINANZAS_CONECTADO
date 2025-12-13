@@ -45,6 +45,7 @@
     Router.register('deudas', () => renderAndSync(() => DeudasController.render()));
     Router.register('prestamos', () => renderAndSync(() => PrestamosController.render()));
     Router.register('patrimonio', () => renderAndSync(() => PatrimonioController.render()));
+    Router.register('cashflow', () => renderAndSync(() => CashflowController.render()));
     Router.register('ahorros', () => renderAndSync(() => AhorrosController.render()));
     Router.register('custodia', () => renderAndSync(() => CustodiaController.render()));
     Router.register('auditoria', () => renderAndSync(() => AuditoriaController.render()));
@@ -75,6 +76,11 @@
   function setupModal() {
     const modal = document.getElementById('modal');
     const closeBtn = modal.querySelector('.modal-close');
+    
+    // Función global para cerrar modal
+    window.closeModal = function() {
+      modal.classList.remove('show');
+    };
     
     // Cerrar modal al hacer clic en X
     closeBtn.addEventListener('click', () => {
@@ -186,7 +192,9 @@
       'pasivos',
       'custodias',
       'auditorias',
-      'configuracion_cuentas'
+      'configuracion_cuentas',
+      'cashflow_ingresos',
+      'cashflow_gastos'
     ];
     
     let cargadas = 0;

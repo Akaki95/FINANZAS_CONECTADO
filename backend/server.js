@@ -23,6 +23,8 @@ const ahorrosRoutes = require('./routes/ahorros');
 const custodiaRoutes = require('./routes/custodia');
 const auditoriaRoutes = require('./routes/auditoria');
 const configuracionCuentasRoutes = require('./routes/configuracion_cuentas');
+const cashflowIngresosRoutes = require('./routes/cashflow_ingresos');
+const cashflowGastosRoutes = require('./routes/cashflow_gastos');
 
 // Usar rutas
 app.use('/api/gastos', gastosRoutes);
@@ -37,6 +39,8 @@ app.use('/api/ahorros', ahorrosRoutes);
 app.use('/api/custodias', custodiaRoutes);
 app.use('/api/auditorias', auditoriaRoutes);
 app.use('/api/configuracion_cuentas', configuracionCuentasRoutes);
+app.use('/api/cashflow_ingresos', cashflowIngresosRoutes);
+app.use('/api/cashflow_gastos', cashflowGastosRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
