@@ -1,4 +1,4 @@
-// Sync Service - Gestión de sincronización con backend Node.js
+// Sync Service - Gestión de sincronización con backend Node.js (OPTIMIZADO)
 const SyncService = {
   // Switch automático entre local y producción
   apiBaseUrl: (window.location.hostname === 'localhost')
@@ -7,11 +7,15 @@ const SyncService = {
   isOnline: navigator.onLine,
   syncQueue: [],
   syncInterval: null,
+  timestampCheckInterval: null,
   statusElement: null,
+  lastSyncTime: null,
+  collectionTimestamps: {}, // Timestamps de última sincronización por colección
   
   // Inicializar el servicio de sincronización
   init() {
     this.statusElement = document.getElementById('sync-status');
+    this.loadCollectionTimestamps();
     this.checkBackendConnection();
     
     // Escuchar eventos de conexión
@@ -21,17 +25,20 @@ const SyncService = {
     // Cargar cola de sincronización pendiente
     this.loadSyncQueue();
     
-    // Iniciar sincronización automática cada 30 segundos
+    // Iniciar sincronización automática cada 30 segundos (solo cola pendiente)
     this.startAutoSync();
     
-    Logger.log('SyncService inicializado con backend Node.js');
+    // Verificar timestamps cada 60 segundos (petición ligera)
+    this.startTimestampCheck();
+    
+    Logger.log('SyncService inicializado con backend Node.js (OPTIMIZADO)');
   },
   
   // Verificar conexión con backend
   async checkBackendConnection() {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout para Render
       
       const response = await fetch(this.apiBaseUrl.replace('/api', ''), {
         signal: controller.signal
@@ -41,6 +48,7 @@ const SyncService = {
       
       if (response.ok) {
         this.isOnline = true;
+        this.lastSyncTime = Date.now();
         Logger.success('Backend conectado correctamente');
       } else {
         this.isOnline = false;
@@ -80,7 +88,16 @@ const SyncService = {
     
     if (this.isOnline) {
       indicator.className = 'sync-indicator';
-      text.textContent = 'Sincronizado';
+      const timeSinceSync = this.lastSyncTime ? Math.floor((Date.now() - this.lastSyncTime) / 1000) : null;
+      if (timeSinceSync !== null) {
+        if (timeSinceSync < 60) {
+          text.textContent = `Sincronizado hace ${timeSinceSync}s`;
+        } else {
+          text.textContent = `Sincronizado hace ${Math.floor(timeSinceSync / 60)}min`;
+        }
+      } else {
+        text.textContent = 'Sincronizado';
+      }
     } else {
       indicator.className = 'sync-indicator offline';
       text.textContent = 'Sin conexión';
@@ -286,7 +303,7 @@ const SyncService = {
       }
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos timeout para Render
       
       const response = await fetch(url, {
         method: 'GET',
@@ -311,6 +328,10 @@ const SyncService = {
       } else {
         documents = [];
       }
+      
+      // Actualizar timestamp de esta colección
+      this.updateCollectionTimestamp(collection);
+      this.lastSyncTime = Date.now();
       
       Logger.success(`${documents.length} documentos cargados de ${collection} desde el backend`);
       return documents;
@@ -399,6 +420,157 @@ const SyncService = {
     } catch (error) {
       Logger.error(`Error sincronizando ${collection}`, error);
     }
+  },
+
+  // ===== NUEVOS MÉTODOS DE OPTIMIZACIÓN =====
+
+  // Sincronización selectiva de una colección específica
+  async syncCollection(collection, forceReload = false) {
+    if (!this.isOnline) {
+      Logger.log(`Colección ${collection} - usando datos locales (sin conexión)`);
+      return CacheService.get(collection) || [];
+    }
+
+    try {
+      // Verificar si necesitamos recargar según timestamp
+      if (!forceReload && !this.shouldSyncCollection(collection)) {
+        Logger.log(`Colección ${collection} actualizada - usando caché local`);
+        return CacheService.get(collection) || [];
+      }
+
+      // Cargar desde servidor
+      const datos = await this.loadFromCloud(collection);
+      if (datos && datos.length >= 0) {
+        CacheService.set(collection, datos);
+        Logger.success(`${collection}: ${datos.length} registros sincronizados`);
+        return datos;
+      } else {
+        Logger.warn(`${collection}: sin datos en servidor, usando caché local`);
+        return CacheService.get(collection) || [];
+      }
+    } catch (error) {
+      Logger.error(`Error sincronizando ${collection}: ${error.message}`);
+      return CacheService.get(collection) || [];
+    }
+  },
+
+  // Verificar si una colección necesita sincronización
+  shouldSyncCollection(collection) {
+    const lastSync = this.collectionTimestamps[collection];
+    if (!lastSync) return true; // Primera carga
+    
+    const now = Date.now();
+    const maxAge = 120000; // 2 minutos (puedes ajustar)
+    
+    return (now - lastSync) > maxAge;
+  },
+
+  // Actualizar timestamp de colección
+  updateCollectionTimestamp(collection) {
+    this.collectionTimestamps[collection] = Date.now();
+    this.saveCollectionTimestamps();
+  },
+
+  // Guardar timestamps en localStorage
+  saveCollectionTimestamps() {
+    try {
+      localStorage.setItem('collection_timestamps', JSON.stringify(this.collectionTimestamps));
+    } catch (error) {
+      Logger.error('Error guardando timestamps', error);
+    }
+  },
+
+  // Cargar timestamps desde localStorage
+  loadCollectionTimestamps() {
+    try {
+      const saved = localStorage.getItem('collection_timestamps');
+      if (saved) {
+        this.collectionTimestamps = JSON.parse(saved);
+      }
+    } catch (error) {
+      Logger.error('Error cargando timestamps', error);
+      this.collectionTimestamps = {};
+    }
+  },
+
+  // Verificación periódica de timestamps (petición ligera)
+  startTimestampCheck() {
+    if (this.timestampCheckInterval) {
+      clearInterval(this.timestampCheckInterval);
+    }
+    
+    this.timestampCheckInterval = setInterval(() => {
+      if (this.isOnline) {
+        this.updateStatus(); // Actualizar indicador de tiempo
+      }
+    }, 60000); // Cada 60 segundos
+  },
+
+  // Cargar todas las colecciones (solo al iniciar la app)
+  async loadAllCollections() {
+    Logger.log('Cargando todas las colecciones desde MongoDB Atlas...');
+    
+    const colecciones = [
+      'gastos',
+      'ingresos',
+      'deudas',
+      'prestamos',
+      'activos',
+      'pasivos',
+      'ahorros',
+      'custodias',
+      'auditorias',
+      'configuracion_cuentas',
+      'cashflow_ingresos',
+      'cashflow_gastos'
+    ];
+    
+    let cargadas = 0;
+    const promises = [];
+    
+    // Cargar configuración de formularios (estructura diferente)
+    promises.push(
+      ConfigModel.loadFromAtlas()
+        .then(() => {
+          cargadas++;
+          Logger.success('Configuración de formularios cargada desde MongoDB');
+        })
+        .catch(error => {
+          Logger.warn('Error cargando configuración de formularios');
+        })
+    );
+    
+    // Cargar todas las colecciones en paralelo (más eficiente que secuencial)
+    for (const coleccion of colecciones) {
+      promises.push(
+        this.loadFromCloud(coleccion)
+          .then(datos => {
+            if (datos && datos.length >= 0) {
+              CacheService.set(coleccion, datos);
+              cargadas++;
+              Logger.success(`${coleccion}: ${datos.length} registros cargados`);
+            } else {
+              Logger.log(`${coleccion}: sin datos en servidor`);
+            }
+          })
+          .catch(error => {
+            Logger.warn(`Error cargando ${coleccion}: ${error.message}`);
+          })
+      );
+    }
+    
+    await Promise.all(promises);
+    
+    if (cargadas > 0) {
+      Logger.success(`✓ ${cargadas} colecciones cargadas desde MongoDB Atlas`);
+    } else {
+      Logger.log('No se encontraron datos en el servidor o no hay conexión');
+    }
+    
+    this.lastSyncTime = Date.now();
+    this.updateStatus();
+    
+    return cargadas;
   }
 };
 

@@ -3,7 +3,7 @@
   'use strict';
   
   // Inicializar la aplicación
-  function init() {
+  async function init() {
     Logger.log('Iniciando aplicación de Finanzas Personales...');
     
     // Inicializar tema
@@ -12,15 +12,13 @@
     // Inicializar servicios
     SyncService.init();
 
-    // Sincronizar datos al cargar la página
+    // OPTIMIZACIÓN: Cargar TODOS los datos solo una vez al iniciar
+    await cargarDatosIniciales();
+
+    // Sincronizar cola pendiente
     if (SyncService.isOnline) {
       SyncService.processSyncQueue();
     }
-
-    // Inicializar configuración (carga desde MongoDB solo si no existe localmente)
-    ConfigModel.init().catch(error => {
-      Logger.error('Error inicializando configuración', error);
-    });
 
     // Inicializar modelos
     AuditoriaModel.init();
@@ -31,28 +29,39 @@
     // Programar aplicación de reglas automáticas cada hora
     setInterval(aplicarReglasAutomaticas, 3600000); // 1 hora
 
-    // Registrar rutas con sincronización automática
-    const renderAndSync = async (renderFn) => {
-      // Sincronizar datos desde MongoDB antes de renderizar
-      await cargarDatosIniciales();
-      // Luego renderizar con los datos actualizados
+    // OPTIMIZACIÓN: Registrar rutas con sincronización SELECTIVA
+    const renderWithSelectiveSync = async (renderFn, collections) => {
+      // Sincronizar solo las colecciones necesarias para esta vista
+      if (collections && collections.length > 0) {
+        for (const collection of collections) {
+          await SyncService.syncCollection(collection);
+        }
+      }
+      // Renderizar con los datos actualizados
       await renderFn();
     };
 
-    Router.register('dashboard', () => renderAndSync(() => DashboardView.render()));
-    Router.register('gastos', () => renderAndSync(() => GastosController.render()));
-    Router.register('ingresos', () => renderAndSync(() => IngresosController.render()));
-    Router.register('deudas', () => renderAndSync(() => DeudasController.render()));
-    Router.register('prestamos', () => renderAndSync(() => PrestamosController.render()));
-    Router.register('patrimonio', () => renderAndSync(() => PatrimonioController.render()));
-    Router.register('cashflow', () => renderAndSync(() => CashflowController.render()));
-    Router.register('ahorros', () => renderAndSync(() => AhorrosController.render()));
-    Router.register('custodia', () => renderAndSync(() => CustodiaController.render()));
-    Router.register('auditoria', () => renderAndSync(() => AuditoriaController.render()));
-    Router.register('configuracion', () => renderAndSync(() => ConfigController.render()));
+    Router.register('dashboard', () => renderWithSelectiveSync(() => DashboardView.render(), ['gastos', 'ingresos', 'deudas', 'prestamos', 'activos', 'pasivos']));
+    Router.register('gastos', () => renderWithSelectiveSync(() => GastosController.render(), ['gastos']));
+    Router.register('ingresos', () => renderWithSelectiveSync(() => IngresosController.render(), ['ingresos']));
+    Router.register('deudas', () => renderWithSelectiveSync(() => DeudasController.render(), ['deudas']));
+    Router.register('prestamos', () => renderWithSelectiveSync(() => PrestamosController.render(), ['prestamos']));
+    Router.register('patrimonio', () => renderWithSelectiveSync(() => PatrimonioController.render(), ['activos', 'pasivos']));
+    Router.register('cashflow', () => renderWithSelectiveSync(() => CashflowController.render(), ['cashflow_ingresos', 'cashflow_gastos']));
+    Router.register('ahorros', () => renderWithSelectiveSync(() => AhorrosController.render(), ['ahorros']));
+    Router.register('custodia', () => renderWithSelectiveSync(() => CustodiaController.render(), ['custodias']));
+    Router.register('auditoria', () => renderWithSelectiveSync(() => AuditoriaController.render(), ['auditorias']));
+    Router.register('configuracion', () => renderWithSelectiveSync(() => ConfigController.render(), ['configuracion_cuentas']));
 
     // Inicializar router
     Router.init();
+    
+    // Forzar navegación inicial al Dashboard si no hay hash
+    if (!window.location.hash) {
+      Router.navigate('dashboard');
+    } else {
+      Router.handleRoute();
+    }
 
     // Configurar modal
     setupModal();
@@ -179,49 +188,12 @@
     document.addEventListener('keydown', escHandler);
   }
   
-  // Cargar datos iniciales desde el servidor
+  // Cargar datos iniciales desde el servidor (OPTIMIZADO)
   async function cargarDatosIniciales() {
     Logger.log('Cargando datos desde MongoDB Atlas...');
     
-    const colecciones = [
-      'gastos',
-      'ingresos',
-      'deudas',
-      'prestamos',
-      'activos',
-      'pasivos',
-      'custodias',
-      'auditorias',
-      'configuracion_cuentas',
-      'cashflow_ingresos',
-      'cashflow_gastos'
-    ];
-    
-    let cargadas = 0;
-    
-    // Cargar configuración de formularios (estructura diferente)
-    try {
-      await ConfigModel.loadFromAtlas();
-      Logger.success('Configuración de formularios cargada desde MongoDB');
-      cargadas++;
-    } catch (error) {
-      Logger.warn('Error cargando configuración de formularios');
-    }
-    
-    for (const coleccion of colecciones) {
-      try {
-        const datos = await SyncService.loadFromCloud(coleccion);
-        if (datos && datos.length > 0) {
-          CacheService.set(coleccion, datos);
-          cargadas++;
-          Logger.success(`${coleccion}: ${datos.length} registros cargados`);
-        } else {
-          Logger.log(`${coleccion}: sin datos en servidor`);
-        }
-      } catch (error) {
-        Logger.warn(`Error cargando ${coleccion}: ${error.message}`);
-      }
-    }
+    // Usar el nuevo método optimizado de SyncService
+    const cargadas = await SyncService.loadAllCollections();
     
     if (cargadas > 0) {
       Logger.success(`✓ ${cargadas} colecciones cargadas desde MongoDB Atlas`);
