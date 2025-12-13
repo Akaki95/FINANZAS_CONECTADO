@@ -276,7 +276,7 @@ body {
     right: auto !important;
     transform: translateX(-50%);
     width: 60% !important;
-    padding: 20px;
+    padding: 12px;
   }
 
   .nav {
@@ -285,19 +285,21 @@ body {
     top: 48px;
     left: 0;
     width: 100%;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #f8fafc 60%, #e3e9f7 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border-radius: 12px;
     flex-direction: column;
-    z-index: 100;
-    transition: max-height 0.3s ease;
+    z-index: 9999;
+    transition: all 0.3s ease;
     max-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e0e6ed;
   }
   .nav.show {
     display: flex;
-    max-height: 400px;
-    overflow: visible;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    max-height: calc(100vh - 80px);
+    padding: 8px 0;
   }
 
   .nav-btn {
@@ -306,6 +308,11 @@ body {
     justify-content: center;
     display: flex;
     width: 100%;
+    padding: 14px 16px;
+    margin: 2px 0;
+    border-radius: 8px;
+    font-size: 1rem;
+    white-space: nowrap;
   }
 
   .header {
