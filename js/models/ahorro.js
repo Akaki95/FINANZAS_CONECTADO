@@ -35,7 +35,11 @@ const AhorroModel = {
     
     // Combinar y ordenar por fecha
     const todosAhorros = [...ahorrosDeGastos, ...ahorrosDeIngresos]
-      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      .sort((a, b) => {
+        const fechaDiff = new Date(b.fecha) - new Date(a.fecha);
+        if (fechaDiff !== 0) return fechaDiff;
+        return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+      });
     
     Logger.log(`${todosAhorros.length} movimientos de ahorro calculados`);
     return todosAhorros;

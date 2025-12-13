@@ -4,7 +4,11 @@ const GastosController = {
   // Renderizar vista de gastos
   render() {
     const mainContent = document.getElementById('main-content');
-    const gastos = GastoModel.getAll().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const gastos = GastoModel.getAll().sort((a, b) => {
+      const fechaDiff = new Date(b.fecha) - new Date(a.fecha);
+      if (fechaDiff !== 0) return fechaDiff;
+      return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+    });
     const categorias = GastoModel.getCategorias();
     
     mainContent.innerHTML = `

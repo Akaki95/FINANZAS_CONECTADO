@@ -196,7 +196,11 @@ const DeudaModel = {
       g.categoria === 'Pago Deuda' && 
       g.descripcion && 
       g.descripcion.toLowerCase().includes(deuda.acreedor.toLowerCase())
-    ).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    ).sort((a, b) => {
+      const fechaDiff = new Date(b.fecha) - new Date(a.fecha);
+      if (fechaDiff !== 0) return fechaDiff;
+      return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+    });
   }
 };
 

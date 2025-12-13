@@ -2,7 +2,11 @@
 const DeudasController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const deudas = DeudaModel.getAll().sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio));
+    const deudas = DeudaModel.getAll().sort((a, b) => {
+      const fechaDiff = new Date(b.fechaInicio) - new Date(a.fechaInicio);
+      if (fechaDiff !== 0) return fechaDiff;
+      return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+    });
     const totalPendiente = DeudaModel.getTotalPendiente();
     
     mainContent.innerHTML = `

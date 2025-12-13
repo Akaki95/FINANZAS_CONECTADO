@@ -37,7 +37,11 @@ const CustodiaModel = {
     const custodias = this.getAll();
     return custodias
       .filter(c => c.persona.toLowerCase() === persona.toLowerCase())
-      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      .sort((a, b) => {
+        const fechaDiff = new Date(b.fecha) - new Date(a.fecha);
+        if (fechaDiff !== 0) return fechaDiff;
+        return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+      });
   },
   
   // Calcular saldo por persona

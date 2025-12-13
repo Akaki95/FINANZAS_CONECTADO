@@ -230,7 +230,11 @@ const CustodiaController = {
   },
   
   renderTodosMovimientos() {
-    const custodias = CustodiaModel.getAll().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const custodias = CustodiaModel.getAll().sort((a, b) => {
+      const fechaDiff = new Date(b.fecha) - new Date(a.fecha);
+      if (fechaDiff !== 0) return fechaDiff;
+      return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+    });
     
     if (custodias.length === 0) {
       return `

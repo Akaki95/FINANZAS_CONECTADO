@@ -2,7 +2,11 @@
 const IngresosController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const ingresos = IngresoModel.getAll().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const ingresos = IngresoModel.getAll().sort((a, b) => {
+      const fechaDiff = new Date(b.fecha) - new Date(a.fecha);
+      if (fechaDiff !== 0) return fechaDiff;
+      return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+    });
     
     mainContent.innerHTML = `
       <div class="container">

@@ -2,7 +2,11 @@
 const PrestamosController = {
   render() {
     const mainContent = document.getElementById('main-content');
-    const prestamos = PrestamoModel.getAll().sort((a, b) => new Date(b.fechaPrestamo) - new Date(a.fechaPrestamo));
+    const prestamos = PrestamoModel.getAll().sort((a, b) => {
+      const fechaDiff = new Date(b.fechaPrestamo) - new Date(a.fechaPrestamo);
+      if (fechaDiff !== 0) return fechaDiff;
+      return b.id.localeCompare(a.id); // Si misma fecha, el más reciente (ID mayor) primero
+    });
     const totalPendiente = PrestamoModel.getTotalPendiente();
     
     mainContent.innerHTML = `
