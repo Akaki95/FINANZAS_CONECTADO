@@ -442,6 +442,7 @@ const SyncService = {
       const datos = await this.loadFromCloud(collection);
       if (datos && datos.length >= 0) {
         CacheService.set(collection, datos);
+        this.updateCollectionTimestamp(collection); // Actualizar timestamp
         Logger.success(`${collection}: ${datos.length} registros sincronizados`);
         return datos;
       } else {

@@ -32,9 +32,10 @@
     // OPTIMIZACIÓN: Registrar rutas con sincronización SELECTIVA
     const renderWithSelectiveSync = async (renderFn, collections) => {
       // Sincronizar solo las colecciones necesarias para esta vista
+      // FORZAR RECARGA para que siempre tenga datos frescos al navegar
       if (collections && collections.length > 0) {
         for (const collection of collections) {
-          await SyncService.syncCollection(collection);
+          await SyncService.syncCollection(collection, true); // true = forceReload
         }
       }
       // Renderizar con los datos actualizados
