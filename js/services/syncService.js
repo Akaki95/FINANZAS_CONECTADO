@@ -153,6 +153,8 @@ const SyncService = {
           return await this.updateOne(collection, id, data);
         case 'delete':
           return await this.deleteOne(collection, id);
+        case 'cobrar':
+          return await this.registrarCobro(collection, id, data);
         default:
           Logger.error('Acción desconocida', action);
           return false;
@@ -224,6 +226,26 @@ const SyncService = {
 
     const result = await response.json();
     Logger.success(`Documento actualizado en ${collection}`);
+    return result;
+  },
+  
+  // Registrar cobro de préstamo
+  async registrarCobro(collection, id, data) {
+    const url = `${this.apiBaseUrl}/${collection}/${id}/cobrar`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Error registrando cobro: ${error.error || response.statusText}`);
+    }
+
+    const result = await response.json();
+    Logger.success(`Cobro registrado en ${collection}`);
     return result;
   },
   

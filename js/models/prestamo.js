@@ -4,7 +4,36 @@ const PrestamoModel = {
   
   // Obtener todos los préstamos
   getAll() {
-    const prestamos = CacheService.get(this.collectionName) || [];
+    let prestamos = CacheService.get(this.collectionName) || [];
+    
+    // Migrar campos antiguos (montoPendiente -> montoActual)
+    let migrado = false;
+    prestamos = prestamos.map(p => {
+      if (p.montoPendiente !== undefined && p.montoActual === undefined) {
+        migrado = true;
+        return {
+          ...p,
+          montoActual: p.montoPendiente,
+          montoCobrado: p.montoInicial - p.montoPendiente,
+          montoPendiente: undefined
+        };
+      }
+      // Asegurar que montoCobrado existe
+      if (p.montoCobrado === undefined) {
+        return {
+          ...p,
+          montoCobrado: p.montoInicial - (p.montoActual || p.montoInicial)
+        };
+      }
+      return p;
+    });
+    
+    // Guardar si hubo migración
+    if (migrado) {
+      CacheService.set(this.collectionName, prestamos);
+      Logger.success('Préstamos migrados a nuevo formato');
+    }
+    
     Logger.log(`${prestamos.length} préstamos cargados`);
     return prestamos;
   },
@@ -30,8 +59,10 @@ const PrestamoModel = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       persona: ValidationService.sanitizarTexto(prestamoData.persona),
       montoInicial: montoInicial,
-      montoPendiente: prestamoData.montoPendiente !== undefined ? 
-        ValidationService.formatearMonto(prestamoData.montoPendiente) : montoInicial,
+      montoActual: prestamoData.montoActual !== undefined ? 
+        ValidationService.formatearMonto(prestamoData.montoActual) : montoInicial,
+      montoCobrado: prestamoData.montoCobrado !== undefined ? 
+        ValidationService.formatearMonto(prestamoData.montoCobrado) : 0,
       fechaPrestamo: prestamoData.fechaPrestamo,
       fechaDevolucion: prestamoData.fechaDevolucion || null,
       descripcion: ValidationService.sanitizarTexto(prestamoData.descripcion || ''),
@@ -88,7 +119,8 @@ const PrestamoModel = {
       ...prestamos[index],
       persona: ValidationService.sanitizarTexto(prestamoData.persona),
       montoInicial: ValidationService.formatearMonto(prestamoData.montoInicial),
-      montoPendiente: ValidationService.formatearMonto(prestamoData.montoPendiente),
+      montoActual: ValidationService.formatearMonto(prestamoData.montoActual),
+      montoCobrado: ValidationService.formatearMonto(prestamoData.montoCobrado || 0),
       fechaPrestamo: prestamoData.fechaPrestamo,
       fechaDevolucion: prestamoData.fechaDevolucion || null,
       descripcion: ValidationService.sanitizarTexto(prestamoData.descripcion || ''),
@@ -116,14 +148,33 @@ const PrestamoModel = {
       throw new Error('Préstamo no encontrado');
     }
     
-    const nuevoPendiente = prestamo.montoPendiente - montoPago;
-    if (nuevoPendiente < 0) {
+    const nuevoMontoActual = prestamo.montoActual - montoPago;
+    if (nuevoMontoActual < 0) {
       throw new Error('El pago no puede ser mayor que el monto pendiente');
     }
     
-    const resultado = this.update(id, {
-      ...prestamo,
-      montoPendiente: nuevoPendiente
+    const nuevoMontoCobrado = (prestamo.montoCobrado || 0) + montoPago;
+    
+    // Actualizar localmente
+    const prestamos = this.getAll();
+    const index = prestamos.findIndex(p => p.id === id);
+    
+    if (index !== -1) {
+      prestamos[index] = {
+        ...prestamos[index],
+        montoActual: nuevoMontoActual,
+        montoCobrado: nuevoMontoCobrado,
+        updatedAt: new Date().toISOString()
+      };
+      CacheService.set(this.collectionName, prestamos);
+    }
+    
+    // Agregar a cola de sincronización con operación específica de cobro
+    SyncService.addToQueue({
+      collection: this.collectionName,
+      action: 'cobrar',
+      id: id,
+      data: { monto: montoPago }
     });
     
     // Crear ingreso automático por el cobro del préstamo
@@ -140,7 +191,8 @@ const PrestamoModel = {
       Logger.error('Error creando ingreso automático por cobro de préstamo', error);
     }
     
-    return resultado;
+    Logger.success('Pago registrado en préstamo', { id, monto: montoPago });
+    return prestamos[index];
   },
   
   // Eliminar préstamo
@@ -168,7 +220,7 @@ const PrestamoModel = {
   
   // Obtener préstamos activos (con monto pendiente > 0)
   getActivos() {
-    return this.getAll().filter(p => p.montoPendiente > 0);
+    return this.getAll().filter(p => p.montoActual > 0);
   },
   
   // Obtener préstamos vencidos
@@ -182,7 +234,7 @@ const PrestamoModel = {
   
   // Calcular total pendiente de cobro
   getTotalPendiente() {
-    return this.getActivos().reduce((sum, p) => sum + p.montoPendiente, 0);
+    return this.getActivos().reduce((sum, p) => sum + p.montoActual, 0);
   },
   
   // Obtener historial de cobros de un préstamo

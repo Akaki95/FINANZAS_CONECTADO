@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const db = getDB();
-    const { id, createdAt, ...updateData } = req.body;
+    const { id, createdAt, _id, ...updateData } = req.body;
     
     updateData.updatedAt = new Date().toISOString();
     

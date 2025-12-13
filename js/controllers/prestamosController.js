@@ -38,8 +38,8 @@ const PrestamosController = {
                     <input type="number" id="prestamo-monto-inicial" class="form-input" step="0.01" min="0.01" required>
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Monto Pendiente (€) *</label>
-                    <input type="number" id="prestamo-monto-pendiente" class="form-input" step="0.01" min="0" required>
+                    <label class="form-label">Monto Actual (€) *</label>
+                    <input type="number" id="prestamo-monto-actual" class="form-input" step="0.01" min="0" required>
                   </div>
                 </div>
                 <div class="form-row">
@@ -108,7 +108,7 @@ const PrestamosController = {
             <ul class="items-list">
               ${prestamos.map(p => {
                 const cobros = PrestamoModel.getCobros(p.id);
-                const totalCobrado = p.montoInicial - p.montoPendiente;
+                const totalCobrado = p.montoCobrado || 0;
                 return `
                 <li class="item item-expandible" id="prestamo-${p.id}">
                   <div class="item-main" onclick="PrestamosController.toggleDetalles('${p.id}')">
@@ -120,7 +120,7 @@ const PrestamosController = {
                         ${p.fechaDevolucion ? ' | Devolución: ' + new Date(p.fechaDevolucion).toLocaleDateString('es-ES') : ''}
                       </div>
                     </div>
-                    <div class="item-amount text-success">${Calculations.formatearMoneda(p.montoPendiente)}</div>
+                    <div class="item-amount text-success">${Calculations.formatearMoneda(p.montoActual)}</div>
                     <div class="item-actions" onclick="event.stopPropagation()">
                       <button class="item-action-btn" onclick="PrestamosController.registrarPago('${p.id}')">💰 Cobro</button>
                       <button class="item-action-btn" onclick="PrestamosController.editar('${p.id}')">✏️</button>
@@ -180,7 +180,8 @@ const PrestamosController = {
     const data = {
       persona: document.getElementById('prestamo-persona').value,
       montoInicial: document.getElementById('prestamo-monto-inicial').value,
-      montoPendiente: document.getElementById('prestamo-monto-pendiente').value,
+      montoActual: document.getElementById('prestamo-monto-actual').value,
+      montoCobrado: id ? PrestamoModel.getById(id)?.montoCobrado || 0 : 0,
       fechaPrestamo: document.getElementById('prestamo-fecha-prestamo').value,
       fechaDevolucion: document.getElementById('prestamo-fecha-devolucion').value,
       descripcion: document.getElementById('prestamo-descripcion').value
@@ -203,7 +204,7 @@ const PrestamosController = {
     document.getElementById('prestamo-id').value = prestamo.id;
     document.getElementById('prestamo-persona').value = prestamo.persona;
     document.getElementById('prestamo-monto-inicial').value = prestamo.montoInicial;
-    document.getElementById('prestamo-monto-pendiente').value = prestamo.montoPendiente;
+    document.getElementById('prestamo-monto-actual').value = prestamo.montoActual;
     document.getElementById('prestamo-fecha-prestamo').value = prestamo.fechaPrestamo;
     document.getElementById('prestamo-fecha-devolucion').value = prestamo.fechaDevolucion || '';
     document.getElementById('prestamo-descripcion').value = prestamo.descripcion || '';
@@ -226,9 +227,9 @@ const PrestamosController = {
     document.getElementById('modal-cobro').classList.add('show');
     document.getElementById('cobro-prestamo-id').value = prestamo.id;
     document.getElementById('cobro-persona').value = prestamo.persona;
-    document.getElementById('cobro-pendiente').value = Calculations.formatearMoneda(prestamo.montoPendiente);
+    document.getElementById('cobro-pendiente').value = Calculations.formatearMoneda(prestamo.montoActual);
     document.getElementById('cobro-monto').value = '';
-    document.getElementById('cobro-monto').max = prestamo.montoPendiente;
+    document.getElementById('cobro-monto').max = prestamo.montoActual;
     document.getElementById('cobro-errors').textContent = '';
   },
   
